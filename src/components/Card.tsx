@@ -1,10 +1,10 @@
-
 import { motion } from 'framer-motion';
 
 interface CardProps {
   card: {
     word: string;
     translation: string;
+    level?: number;
   };
   reveal: boolean;
   setReveal: (reveal: boolean) => void;
@@ -34,13 +34,32 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
 
   return (
     <div className="select-none cursor-grab active:cursor-grabbing">
-      <motion.p 
-        className="text-sm text-bordeaux/70 mb-1 font-medium uppercase tracking-wide text-center"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        {dir}
-      </motion.p>
+      <div className="flex justify-between items-center mb-4">
+        <motion.p 
+          className="text-sm text-bordeaux/70 font-medium uppercase tracking-wide"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {dir}
+        </motion.p>
+        {card.level !== undefined && (
+          <motion.div 
+            className="flex gap-1"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className={`w-2 h-2 rounded-full ${
+                  i < card.level ? 'bg-bordeaux' : 'bg-bordeaux/20'
+                }`}
+              />
+            ))}
+          </motion.div>
+        )}
+      </div>
+      
       <motion.h3 
         className="text-5xl md:text-6xl font-extrabold text-bordeaux text-center break-words"
         onClick={() => setReveal(!reveal)}

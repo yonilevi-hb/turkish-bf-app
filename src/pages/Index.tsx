@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { VocabularyList } from '@/components/VocabularyList';
@@ -8,16 +7,39 @@ import { DirectionToggle } from '@/components/DirectionToggle';
 import { initialCards } from '@/data/cards';
 import { SWIPE_THRESHOLD, swipePower } from '@/utils/swipe';
 import { FileUpload } from '@/components/FileUpload';
+import { handleSwipe, getNextCard } from '@/utils/spacedRepetition';
+import { toast } from "sonner";
 
 export default function Index() {
-  const [[index, dir], setIndex] = useState([0, 0]);
   const [reveal, setReveal] = useState(false);
   const [mode, setMode] = useState('he_en');
   const [reverse, setReverse] = useState(false);
   const [view, setView] = useState<'cards' | 'list'>('cards');
-  const [cards, setCards] = useState(initialCards);
+  
+  // Initialize cards with learning metadata
+  const [cards, setCards] = useState(() => 
+    initialCards.map(card => ({
+      ...card,
+      level: 0,
+      nextReview: Date.now()
+    }))
+  );
+  
+  const [currentCard, setCurrentCard] = useState(() => getNextCard(cards));
 
-  // Effect to handle the direction change based on mode
+  // Effect to update current card when needed
+  useEffect(() => {
+    if (!currentCard) {
+      const nextCard = getNextCard(cards);
+      if (nextCard) {
+        setCurrentCard(nextCard);
+      } else {
+        toast("Great job! Take a break - no cards to review right now.");
+      }
+    }
+  }, [currentCard, cards]);
+
+  // Effect to handle direction mode
   useEffect(() => {
     if (mode === 'he_en') {
       setReverse(false);
@@ -26,31 +48,33 @@ export default function Index() {
     } else if (mode === 'random') {
       setReverse(Math.random() > 0.5);
     }
-  }, [mode, index]); // Update when mode changes or when moving to next card
+  }, [mode, currentCard]);
 
-  const handleAddCards = (newCards: { word: string; translation: string; }[]) => {
-    const newCardsWithIds = newCards.map((card, idx) => ({
-      ...card,
-      id: `card_${cards.length + idx + 1}`.padStart(6, '0')
-    }));
-    setCards([...cards, ...newCardsWithIds]);
-  };
-
-  const paginate = (d: number) => {
+  const handleCardSwipe = (direction: number) => {
+    if (!currentCard) return;
+    
     setReveal(false);
-    setIndex(([i]) => {
-      // If in random mode, update the reverse state for the next card
-      if (mode === 'random') {
-        setReverse(Math.random() > 0.5);
-      }
-      return [(i + d + cards.length) % cards.length, d];
-    });
+    const isRight = direction > 0;
+    
+    // Update card's spaced repetition data
+    const updatedCard = handleSwipe(currentCard, isRight);
+    setCards(prevCards => 
+      prevCards.map(card => 
+        card.id === updatedCard.id ? updatedCard : card
+      )
+    );
+    
+    // Show feedback
+    toast(isRight ? "Good job! You'll see this card less often." : "Keep practicing! You'll see this card more frequently.");
+    
+    // Set next card
+    setCurrentCard(null); // This will trigger the useEffect to find the next card
   };
 
   const handleDragEnd = (_e: any, { offset, velocity }: any) => {
     const swipe = swipePower(offset.x, velocity.x);
-    if (swipe < -SWIPE_THRESHOLD) paginate(1);
-    else if (swipe > SWIPE_THRESHOLD) paginate(-1);
+    if (swipe < -SWIPE_THRESHOLD) handleCardSwipe(1);
+    else if (swipe > SWIPE_THRESHOLD) handleCardSwipe(-1);
   };
 
   const variants = {
@@ -100,7 +124,7 @@ export default function Index() {
         <div className="relative w-full max-w-xl h-96 flex items-center justify-center touch-pan-y">
           <AnimatePresence custom={dir} initial={false} mode="wait">
             <motion.div
-              key={cards[index].id + (reverse ? 'reverse' : 'normal')}
+              key={currentCard?.id + (reverse ? 'reverse' : 'normal')}
               custom={dir}
               variants={variants}
               initial="enter"
@@ -112,25 +136,27 @@ export default function Index() {
               onDragEnd={handleDragEnd}
               className="absolute w-full h-auto px-12 py-16 bg-eggwhite/5 backdrop-blur-sm border border-eggwhite/10 rounded-3xl shadow-2xl"
             >
-              <Card
-                card={cards[index]}
-                reveal={reveal}
-                setReveal={setReveal}
-                reverse={reverse}
-              />
+              {currentCard && (
+                <Card
+                  card={currentCard}
+                  reveal={reveal}
+                  setReveal={setReveal}
+                  reverse={reverse}
+                />
+              )}
             </motion.div>
           </AnimatePresence>
 
           <button
             aria-label="Previous"
-            onClick={() => paginate(-1)}
+            onClick={() => handleCardSwipe(-1)}
             className="absolute left-4 md:left-8 text-bordeaux/50 hover:text-bordeaux transition text-4xl md:text-5xl font-light select-none"
           >
             ‹
           </button>
           <button
             aria-label="Next"
-            onClick={() => paginate(1)}
+            onClick={() => handleCardSwipe(1)}
             className="absolute right-4 md:right-8 text-bordeaux/50 hover:text-bordeaux transition text-4xl md:text-5xl font-light select-none"
           >
             ›

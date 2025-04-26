@@ -10,7 +10,7 @@ import { FileUpload } from '@/components/FileUpload';
 import { handleSwipe, getNextCard } from '@/utils/spacedRepetition';
 import { toast } from "sonner";
 import { useTheme } from 'next-themes';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Shuffle } from 'lucide-react';
 
 export default function Index() {
   const [reveal, setReveal] = useState(false);
@@ -104,6 +104,15 @@ export default function Index() {
     else if (swipe > SWIPE_THRESHOLD) handleCardSwipe(-1);
   };
 
+  const shuffleCards = () => {
+    setCards(prevCards => {
+      const shuffled = [...prevCards].sort(() => Math.random() - 0.5);
+      toast("Cards shuffled! 🔀");
+      return shuffled;
+    });
+    setCurrentCard(null); // Reset current card to get next one from shuffled deck
+  };
+
   const variants = {
     enter: (direction: number) => ({ x: direction > 0 ? 300 : -300, opacity: 0 }),
     center: { x: 0, opacity: 1 },
@@ -111,13 +120,13 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-start gap-6 bg-eggwhite text-slate-900 dark:text-white p-4 font-['Inter']">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-start gap-6 bg-eggwhite dark:bg-gray-900 text-slate-900 dark:text-white p-4 font-['Inter']">
       <header className="flex flex-col items-center gap-4 w-full max-w-4xl pt-2">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-bordeaux to-bordeaux/80 flex items-center justify-center shadow-lg">
             <span className="text-2xl md:text-4xl font-bold text-white">T</span>
           </div>
-          <h1 className="text-3xl md:text-7xl font-bold tracking-tight text-bordeaux">
+          <h1 className="text-3xl md:text-7xl font-bold tracking-tight text-bordeaux dark:text-bordeaux">
             Turkish BF App
           </h1>
           <Button
@@ -129,6 +138,7 @@ export default function Index() {
             {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
         </div>
+        
         {currentCard && (
           <div className="flex flex-col items-center gap-1">
             <div className="text-sm text-slate-600 dark:text-slate-400">
@@ -144,7 +154,16 @@ export default function Index() {
             </div>
           </div>
         )}
+
         <div className="flex flex-wrap items-center justify-center gap-3">
+          <Button
+            variant="outline"
+            onClick={shuffleCards}
+            className="flex items-center gap-2 bg-white dark:bg-gray-800"
+          >
+            <Shuffle className="h-4 w-4" />
+            Shuffle Cards
+          </Button>
           <div className="flex gap-2">
             <Button 
               variant={view === 'cards' ? "default" : "outline"}

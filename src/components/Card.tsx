@@ -13,11 +13,24 @@ interface CardProps {
   reverse: boolean;
 }
 
+const getImageUrl = (word: string) => {
+  return `https://source.unsplash.com/featured/?${encodeURIComponent(word)}&orientation=landscape`;
+};
+
 export function Card({ card, reveal, setReveal, reverse }: CardProps) {
   const front = reverse ? card.translation : card.word;
   const back = reverse ? card.word : card.translation;
   const dir = reverse ? '🇬🇧→🇹🇷' : '🇹🇷→🇬🇧';
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [imageUrl, setImageUrl] = useState<string>('');
+
+  useEffect(() => {
+    if (reveal) {
+      setImageUrl(getImageUrl(card.word));
+    } else {
+      setImageUrl('');
+    }
+  }, [reveal, card.word]);
 
   useEffect(() => {
     const loadVoices = () => {
@@ -96,7 +109,7 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <p className="text-xs md:text-sm text-slate-900 font-medium uppercase tracking-wide">
+        <p className="text-xs md:text-sm text-slate-900 dark:text-white font-medium uppercase tracking-wide">
           {dir}
         </p>
         {card.level !== undefined && (
@@ -109,7 +122,7 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
               <div
                 key={i}
                 className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${
-                  i < card.level ? 'bg-gradient-to-r from-blue-400 to-blue-600' : 'bg-slate-200'
+                  i < card.level ? 'bg-gradient-to-r from-blue-400 to-blue-600' : 'bg-slate-200 dark:bg-slate-700'
                 }`}
               />
             ))}
@@ -120,7 +133,8 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
       <FlipCard 
         front={front} 
         back={back} 
-        onFlip={setReveal} 
+        onFlip={setReveal}
+        image={imageUrl}
       />
       
       <motion.button

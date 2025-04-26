@@ -63,7 +63,11 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				bordeaux: "#722F37",
-				eggwhite: "#F5F5F0"
+				eggwhite: "#F5F5F0",
+				cardBg: {
+					light: "#FFFFFF",
+					dark: "#1A1F2C"
+				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

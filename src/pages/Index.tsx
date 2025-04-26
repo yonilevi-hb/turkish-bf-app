@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { VocabularyList } from '@/components/VocabularyList';
@@ -112,13 +111,13 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-start gap-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white p-4 font-['Inter']">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-start gap-6 bg-eggwhite text-slate-900 dark:text-white p-4 font-['Inter']">
       <header className="flex flex-col items-center gap-4 w-full max-w-4xl pt-2">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+          <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-bordeaux to-bordeaux/80 flex items-center justify-center shadow-lg">
             <span className="text-2xl md:text-4xl font-bold text-white">T</span>
           </div>
-          <h1 className="text-3xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400">
+          <h1 className="text-3xl md:text-7xl font-bold tracking-tight text-bordeaux">
             Turkish BF App
           </h1>
           <Button

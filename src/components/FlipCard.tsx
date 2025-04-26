@@ -1,5 +1,5 @@
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 
 interface FlipCardProps {
@@ -17,7 +17,10 @@ export function FlipCard({ front, back, onFlip }: FlipCardProps) {
   };
 
   return (
-    <div className="relative w-full h-[200px] cursor-pointer perspective-1000" onClick={handleFlip}>
+    <div 
+      className="relative w-full h-[200px] cursor-pointer perspective-1000" 
+      onClick={handleFlip}
+    >
       <motion.div
         className="relative w-full h-full"
         initial={false}
@@ -27,8 +30,8 @@ export function FlipCard({ front, back, onFlip }: FlipCardProps) {
       >
         {/* Front of card */}
         <div className="absolute w-full h-full backface-hidden">
-          <div className="w-full h-full flex items-center justify-center bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-3xl md:text-6xl font-bold text-slate-900">
+          <div className="w-full h-full flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-slate-700">
+            <h3 className="text-3xl md:text-6xl font-bold text-slate-900 dark:text-white">
               {front}
             </h3>
           </div>
@@ -39,8 +42,8 @@ export function FlipCard({ front, back, onFlip }: FlipCardProps) {
           className="absolute w-full h-full backface-hidden"
           style={{ transform: "rotateY(180deg)" }}
         >
-          <div className="w-full h-full flex items-center justify-center bg-white rounded-xl shadow-lg p-6">
-            <p className="text-xl md:text-2xl text-slate-900">
+          <div className="w-full h-full flex items-center justify-center bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-slate-700">
+            <p className="text-xl md:text-2xl text-slate-900 dark:text-white">
               {back}
             </p>
           </div>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { VocabularyList } from '@/components/VocabularyList';
@@ -9,6 +10,8 @@ import { SWIPE_THRESHOLD, swipePower } from '@/utils/swipe';
 import { FileUpload } from '@/components/FileUpload';
 import { handleSwipe, getNextCard } from '@/utils/spacedRepetition';
 import { toast } from "sonner";
+import { useTheme } from 'next-themes';
+import { Sun, Moon } from 'lucide-react';
 
 export default function Index() {
   const [reveal, setReveal] = useState(false);
@@ -17,6 +20,7 @@ export default function Index() {
   const [view, setView] = useState<'cards' | 'list'>('cards');
   const [swipeDirection, setSwipeDirection] = useState(0);
   const [showFeedback, setShowFeedback] = useState(true);
+  const { setTheme, theme } = useTheme();
   
   const [cards, setCards] = useState(() => 
     initialCards.map(card => ({
@@ -27,6 +31,14 @@ export default function Index() {
   );
   
   const [currentCard, setCurrentCard] = useState(() => getNextCard(cards));
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+
+  useEffect(() => {
+    if (currentCard) {
+      const index = cards.findIndex(card => card.id === currentCard.id);
+      setCurrentCardIndex(index);
+    }
+  }, [currentCard, cards]);
 
   const handleAddCards = (newCards: any[]) => {
     const cardsWithMetadata = newCards.map(card => ({
@@ -63,6 +75,10 @@ export default function Index() {
   const handleCardSwipe = (direction: number) => {
     if (!currentCard) return;
     
+    if ('vibrate' in navigator) {
+      navigator.vibrate(50); // Gentle haptic feedback
+    }
+
     setReveal(false);
     const isRight = direction > 0;
     
@@ -96,7 +112,7 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-start gap-6 bg-gradient-to-br from-blue-50 to-blue-100 text-slate-900 p-4 font-['Inter']">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-start gap-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white p-4 font-['Inter']">
       <header className="flex flex-col items-center gap-4 w-full max-w-4xl pt-2">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
@@ -105,7 +121,30 @@ export default function Index() {
           <h1 className="text-3xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400">
             Turkish BF App
           </h1>
+          <Button
+            variant="outline"
+            size="icon"
+            className="ml-2"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          >
+            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
         </div>
+        {currentCard && (
+          <div className="flex flex-col items-center gap-1">
+            <div className="text-sm text-slate-600 dark:text-slate-400">
+              Card {currentCardIndex + 1} / {cards.length} ({Math.round(((currentCardIndex + 1) / cards.length) * 100)}%)
+            </div>
+            <div className="w-64 h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-blue-500"
+                initial={{ width: 0 }}
+                animate={{ width: `${((currentCardIndex + 1) / cards.length) * 100}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+          </div>
+        )}
         <div className="flex flex-wrap items-center justify-center gap-3">
           <div className="flex gap-2">
             <Button 
@@ -142,7 +181,7 @@ export default function Index() {
                 drag="x"
                 dragElastic={0.18}
                 onDragEnd={handleDragEnd}
-                className="absolute w-full h-auto px-6 md:px-12 py-8 md:py-16 bg-slate-800/40 backdrop-blur-2xl border border-slate-700/50 rounded-2xl shadow-2xl"
+                className="absolute w-full px-6 md:px-12 py-8 md:py-16"
               >
                 {currentCard && (
                   <Card
@@ -154,21 +193,6 @@ export default function Index() {
                 )}
               </motion.div>
             </AnimatePresence>
-
-            <button
-              aria-label="Don't Know"
-              onClick={() => handleCardSwipe(1)}
-              className="absolute right-2 md:right-8 text-red-400/80 hover:text-red-400 transition text-4xl md:text-6xl font-light select-none bg-bordeaux/40 backdrop-blur-sm h-12 w-12 md:h-16 md:w-16 rounded-full flex items-center justify-center hover:scale-110 hover:bg-bordeaux/60"
-            >
-              ✗
-            </button>
-            <button
-              aria-label="Know"
-              onClick={() => handleCardSwipe(-1)}
-              className="absolute left-2 md:left-8 text-emerald-400/80 hover:text-emerald-400 transition text-4xl md:text-6xl font-light select-none bg-bordeaux/40 backdrop-blur-sm h-12 w-12 md:h-16 md:w-16 rounded-full flex items-center justify-center hover:scale-110 hover:bg-bordeaux/60"
-            >
-              ✓
-            </button>
           </div>
           
           <DirectionToggle mode={mode} setMode={setMode} />

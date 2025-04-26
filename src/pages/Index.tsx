@@ -5,6 +5,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Card } from '@/components/Card';
 import { DirectionToggle } from '@/components/DirectionToggle';
 import { initialCards } from '@/data/cards';
+import { SWIPE_THRESHOLD, swipePower } from '@/utils/swipe';
+import { FileUpload } from '@/components/FileUpload';
 
 export default function Index() {
   const [[index, dir], setIndex] = useState([0, 0]);
@@ -12,6 +14,15 @@ export default function Index() {
   const [mode, setMode] = useState('random');
   const [reverse, setReverse] = useState(false);
   const [view, setView] = useState<'cards' | 'list'>('cards');
+  const [cards, setCards] = useState(initialCards);
+
+  const handleAddCards = (newCards: { word: string; translation: string; }[]) => {
+    const newCardsWithIds = newCards.map((card, idx) => ({
+      ...card,
+      id: `card_${cards.length + idx + 1}`.padStart(6, '0')
+    }));
+    setCards([...cards, ...newCardsWithIds]);
+  };
 
   const paginate = (d: number) => {
     setReveal(false);
@@ -31,7 +42,7 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-12 bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-950 text-white p-8">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-12 bg-gradient-to-br from-bordeaux/5 via-bordeaux/10 to-bordeaux/5 text-bordeaux p-8">
       {/* Header */}
       <header className="flex flex-col items-center gap-6 w-full max-w-4xl">
         <div className="flex items-center gap-4">
@@ -40,7 +51,7 @@ export default function Index() {
             alt="logo"
             className="w-20 h-20 drop-shadow-lg"
           />
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-200 to-indigo-400">
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-bordeaux to-bordeaux/70">
             Yoni's Language App
           </h1>
         </div>
@@ -50,18 +61,19 @@ export default function Index() {
             <Button 
               variant={view === 'cards' ? "default" : "outline"}
               onClick={() => setView('cards')}
-              className="bg-indigo-600/80 hover:bg-indigo-600"
+              className="bg-bordeaux/80 hover:bg-bordeaux text-eggwhite"
             >
               Flashcards
             </Button>
             <Button 
               variant={view === 'list' ? "default" : "outline"}
               onClick={() => setView('list')}
-              className="bg-indigo-600/80 hover:bg-indigo-600"
+              className="bg-bordeaux/80 hover:bg-bordeaux text-eggwhite"
             >
               Vocabulary List
             </Button>
           </div>
+          <FileUpload onCardsAdd={handleAddCards} />
         </div>
       </header>
 
@@ -70,7 +82,7 @@ export default function Index() {
         <div className="relative w-full max-w-xl h-96 flex items-center justify-center touch-pan-y">
           <AnimatePresence custom={dir} initial={false} mode="wait">
             <motion.div
-              key={initialCards[index].id + reverse}
+              key={cards[index].id + reverse}
               custom={dir}
               variants={variants}
               initial="enter"
@@ -80,10 +92,10 @@ export default function Index() {
               drag="x"
               dragElastic={0.18}
               onDragEnd={handleDragEnd}
-              className="absolute w-full h-auto px-12 py-16 bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl shadow-2xl"
+              className="absolute w-full h-auto px-12 py-16 bg-eggwhite/5 backdrop-blur-sm border border-eggwhite/10 rounded-3xl shadow-2xl"
             >
               <Card
-                card={initialCards[index]}
+                card={cards[index]}
                 reveal={reveal}
                 setReveal={setReveal}
                 reverse={reverse}
@@ -94,20 +106,20 @@ export default function Index() {
           <button
             aria-label="Previous"
             onClick={() => paginate(-1)}
-            className="absolute left-4 md:left-8 text-indigo-300 hover:text-white transition text-4xl md:text-5xl font-light select-none"
+            className="absolute left-4 md:left-8 text-bordeaux/50 hover:text-bordeaux transition text-4xl md:text-5xl font-light select-none"
           >
             ‹
           </button>
           <button
             aria-label="Next"
             onClick={() => paginate(1)}
-            className="absolute right-4 md:right-8 text-indigo-300 hover:text-white transition text-4xl md:text-5xl font-light select-none"
+            className="absolute right-4 md:right-8 text-bordeaux/50 hover:text-bordeaux transition text-4xl md:text-5xl font-light select-none"
           >
             ›
           </button>
         </div>
       ) : (
-        <VocabularyList />
+        <VocabularyList cards={cards} />
       )}
     </div>
   );

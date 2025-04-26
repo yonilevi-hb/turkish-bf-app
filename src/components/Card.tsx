@@ -14,18 +14,18 @@ interface CardProps {
 export function Card({ card, reveal, setReveal, reverse }: CardProps) {
   const front = reverse ? card.translation : card.word;
   const back = reverse ? card.word : card.translation;
-  const dir = reverse ? '🇺🇸→🇮🇱' : '🇮🇱→🇺🇸';
+  const dir = reverse ? '🇺🇸→🇹🇷' : '🇹🇷→🇺🇸';
 
   const speakText = (text: string) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       const voices = window.speechSynthesis.getVoices();
-      const hebrewVoice = voices.find(voice => voice.lang.includes('he'));
+      const turkishVoice = voices.find(voice => voice.lang.includes('tr'));
       
-      if (hebrewVoice && !reverse) {
-        utterance.voice = hebrewVoice;
-        utterance.lang = 'he-IL';
+      if (turkishVoice && !reverse) {
+        utterance.voice = turkishVoice;
+        utterance.lang = 'tr-TR';
       }
       
       utterance.rate = 0.5;

@@ -18,10 +18,10 @@ export function DirectionToggle({ mode, setMode }: DirectionToggleProps) {
           key={b.id}
           onClick={() => setMode(b.id)}
           title={b.label}
-          className={`px-4 py-2 rounded-md text-base transition ${
+          className={`px-4 py-2 rounded-md text-base transition backdrop-blur-sm ${
             mode === b.id
-              ? 'bg-indigo-600 text-white shadow'
-              : 'text-gray-300 hover:bg-gray-700'
+              ? 'bg-indigo-600/80 text-white shadow-lg'
+              : 'text-indigo-200 hover:bg-white/5 border border-white/10'
           }`}
         >
           {b.label}

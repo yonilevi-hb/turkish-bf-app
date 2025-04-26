@@ -14,7 +14,7 @@ interface CardProps {
 }
 
 const getImageUrl = (word: string) => {
-  return `https://source.unsplash.com/featured/?${encodeURIComponent(word)}&orientation=landscape`;
+  return `https://source.unsplash.com/400x300/?${encodeURIComponent(word)}`;
 };
 
 export function Card({ card, reveal, setReveal, reverse }: CardProps) {
@@ -23,14 +23,29 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
   const dir = reverse ? '🇬🇧→🇹🇷' : '🇹🇷→🇬🇧';
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [imageUrl, setImageUrl] = useState<string>('');
+  const [isImageLoading, setIsImageLoading] = useState(false);
 
   useEffect(() => {
     if (reveal) {
-      setImageUrl(getImageUrl(card.word));
+      setIsImageLoading(true);
+      const keyword = reverse ? back : front;
+      const imgUrl = getImageUrl(keyword);
+      
+      const img = new Image();
+      img.onload = () => {
+        setImageUrl(imgUrl);
+        setIsImageLoading(false);
+      };
+      img.onerror = () => {
+        console.log("Failed to load image for:", keyword);
+        setIsImageLoading(false);
+        setImageUrl(`https://source.unsplash.com/400x300/?vocabulary`);
+      };
+      img.src = imgUrl;
     } else {
       setImageUrl('');
     }
-  }, [reveal, card.word]);
+  }, [reveal, card.word, front, back, reverse]);
 
   useEffect(() => {
     const loadVoices = () => {
@@ -135,6 +150,7 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
         back={back} 
         onFlip={setReveal}
         image={imageUrl}
+        isImageLoading={isImageLoading}
       />
       
       <motion.button

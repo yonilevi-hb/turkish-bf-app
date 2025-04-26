@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 interface CardProps {
   card: {
@@ -14,18 +15,56 @@ interface CardProps {
 export function Card({ card, reveal, setReveal, reverse }: CardProps) {
   const front = reverse ? card.translation : card.word;
   const back = reverse ? card.word : card.translation;
-  const dir = reverse ? '🇺🇸→🇹🇷' : '🇹🇷→🇺🇸';
+  const dir = reverse ? '🇬🇧→🇹🇷' : '🇹🇷→🇬🇧';
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  useEffect(() => {
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      setAvailableVoices(voices);
+      console.log("Available voices:", voices.map(v => `${v.name} (${v.lang})`).join(', '));
+    };
+
+    if (window.speechSynthesis.getVoices().length > 0) {
+      loadVoices();
+    }
+
+    window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+
+    return () => {
+      window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+    };
+  }, []);
 
   const speakText = (text: string) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      const voices = window.speechSynthesis.getVoices();
-      const turkishVoice = voices.find(voice => voice.lang.includes('tr'));
       
-      if (turkishVoice && !reverse) {
-        utterance.voice = turkishVoice;
-        utterance.lang = 'tr-TR';
+      if (!reverse) {
+        const turkishVoice = availableVoices.find(voice => 
+          voice.lang.includes('tr') || 
+          voice.name.toLowerCase().includes('turkish')
+        );
+        
+        if (turkishVoice) {
+          console.log("Using Turkish voice:", turkishVoice.name);
+          utterance.voice = turkishVoice;
+          utterance.lang = 'tr-TR';
+        } else {
+          console.log("No Turkish voice found, using default");
+        }
+      } else {
+        const englishVoice = availableVoices.find(voice => 
+          voice.lang.includes('en-GB') || 
+          voice.lang.includes('en-US')
+        );
+        
+        if (englishVoice) {
+          console.log("Using English voice:", englishVoice.name);
+          utterance.voice = englishVoice;
+          utterance.lang = englishVoice.lang;
+        }
       }
       
       utterance.rate = 0.5;

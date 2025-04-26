@@ -1,3 +1,4 @@
+
 import { motion } from 'framer-motion';
 
 interface CardProps {
@@ -34,9 +35,9 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
 
   return (
     <div className="select-none cursor-grab active:cursor-grabbing">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-6">
         <motion.p 
-          className="text-sm text-bordeaux/70 font-medium uppercase tracking-wide"
+          className="text-sm text-indigo-300 font-medium uppercase tracking-wide"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -44,7 +45,7 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
         </motion.p>
         {card.level !== undefined && (
           <motion.div 
-            className="flex gap-1"
+            className="flex gap-1.5"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -52,7 +53,7 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
               <div
                 key={i}
                 className={`w-2 h-2 rounded-full ${
-                  i < card.level ? 'bg-bordeaux' : 'bg-bordeaux/20'
+                  i < card.level ? 'bg-gradient-to-r from-indigo-400 to-purple-400' : 'bg-slate-700'
                 }`}
               />
             ))}
@@ -61,7 +62,7 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
       </div>
       
       <motion.h3 
-        className="text-5xl md:text-6xl font-extrabold text-bordeaux text-center break-words"
+        className="text-5xl md:text-6xl font-bold text-white text-center break-words bg-clip-text text-transparent bg-gradient-to-br from-white to-slate-300"
         onClick={() => setReveal(!reveal)}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
@@ -71,7 +72,7 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
       
       <motion.button
         onClick={() => speakText(front)}
-        className="mt-4 px-4 py-2 bg-bordeaux/10 hover:bg-bordeaux/20 rounded-full text-bordeaux transition-colors mx-auto block font-medium backdrop-blur-sm border border-bordeaux/10"
+        className="mt-6 px-6 py-2.5 bg-indigo-600/20 hover:bg-indigo-600/30 rounded-full text-indigo-300 transition-colors mx-auto block font-medium backdrop-blur-sm border border-indigo-500/20"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
@@ -85,7 +86,7 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
           transition={{ type: "spring", damping: 20 }}
         >
           <motion.p 
-            className="text-2xl text-bordeaux/80 mt-6 text-center break-words"
+            className="text-2xl text-slate-300 mt-8 text-center break-words"
             onClick={() => setReveal(false)}
             whileHover={{ scale: 1.02 }}
           >
@@ -93,7 +94,7 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
           </motion.p>
           <motion.button
             onClick={() => speakText(back)}
-            className="mt-2 px-4 py-2 bg-bordeaux/10 hover:bg-bordeaux/20 rounded-full text-bordeaux transition-colors mx-auto block font-medium backdrop-blur-sm border border-bordeaux/10"
+            className="mt-3 px-6 py-2.5 bg-indigo-600/20 hover:bg-indigo-600/30 rounded-full text-indigo-300 transition-colors mx-auto block font-medium backdrop-blur-sm border border-indigo-500/20"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -102,7 +103,7 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
         </motion.div>
       ) : (
         <motion.p 
-          className="text-bordeaux/60 mt-6 italic text-center"
+          className="text-slate-400 mt-8 text-center"
           onClick={() => setReveal(true)}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

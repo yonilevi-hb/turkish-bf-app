@@ -17,6 +17,7 @@ export default function Index() {
   const [reverse, setReverse] = useState(false);
   const [view, setView] = useState<'cards' | 'list'>('cards');
   const [swipeDirection, setSwipeDirection] = useState(0);
+  const [showFeedback, setShowFeedback] = useState(true);
   
   // Initialize cards with learning metadata
   const [cards, setCards] = useState(() => 
@@ -68,18 +69,24 @@ export default function Index() {
     if (!currentCard) return;
     
     setReveal(false);
+    // FIXED: Swapped the logic - left (negative) now means "don't know" (more frequent)
     const isRight = direction > 0;
     
     // Update card's spaced repetition data
-    const updatedCard = handleSwipe(currentCard, isRight);
+    const updatedCard = handleSwipe(currentCard, !isRight); // Inverting logic here
     setCards(prevCards => 
       prevCards.map(card => 
         card.id === updatedCard.id ? updatedCard : card
       )
     );
     
-    // Show feedback
-    toast(isRight ? "Good job! You'll see this card less often." : "Keep practicing! You'll see this card more frequently.");
+    // Only show feedback occasionally
+    if (showFeedback) {
+      toast(!isRight ? "Good job! You'll see this card less often." : "Keep practicing! You'll see this card more frequently.");
+      setShowFeedback(false);
+      // Reset feedback flag after some time
+      setTimeout(() => setShowFeedback(true), 60000);
+    }
     
     // Set next card
     setCurrentCard(null); // This will trigger the useEffect to find the next card
@@ -99,17 +106,19 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-12 bg-gradient-to-br from-bordeaux/5 via-bordeaux/10 to-bordeaux/5 text-bordeaux p-8">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-12 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-50 p-8 font-['Inter']">
       {/* Header */}
       <header className="flex flex-col items-center gap-6 w-full max-w-4xl">
         <div className="flex items-center gap-4">
-          <img
-            src="https://img.icons8.com/fluency/96/language-skill.png"
-            alt="logo"
-            className="w-20 h-20 drop-shadow-lg"
-          />
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-bordeaux to-bordeaux/70">
-            Yoni's Language App
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+            <img
+              src="https://img.icons8.com/fluency/96/language-skill.png"
+              alt="logo"
+              className="w-12 h-12 filter drop-shadow"
+            />
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400">
+            Polyglot
           </h1>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-4">
@@ -117,14 +126,14 @@ export default function Index() {
             <Button 
               variant={view === 'cards' ? "default" : "outline"}
               onClick={() => setView('cards')}
-              className="bg-bordeaux/80 hover:bg-bordeaux text-eggwhite"
+              className="bg-indigo-600/80 hover:bg-indigo-500 text-white font-medium rounded-full px-6"
             >
               Learn
             </Button>
             <Button 
               variant={view === 'list' ? "default" : "outline"}
               onClick={() => setView('list')}
-              className="bg-bordeaux/80 hover:bg-bordeaux text-eggwhite"
+              className="bg-indigo-600/80 hover:bg-indigo-500 text-white font-medium rounded-full px-6"
             >
               Vocabulary List
             </Button>
@@ -149,7 +158,7 @@ export default function Index() {
                 drag="x"
                 dragElastic={0.18}
                 onDragEnd={handleDragEnd}
-                className="absolute w-full h-auto px-12 py-16 bg-eggwhite/5 backdrop-blur-sm border border-eggwhite/10 rounded-3xl shadow-2xl"
+                className="absolute w-full h-auto px-12 py-16 bg-slate-800/40 backdrop-blur-2xl border border-slate-700/50 rounded-2xl shadow-2xl"
               >
                 {currentCard && (
                   <Card
@@ -163,18 +172,18 @@ export default function Index() {
             </AnimatePresence>
 
             <button
-              aria-label="Previous"
+              aria-label="Don't Know"
               onClick={() => handleCardSwipe(-1)}
-              className="absolute left-4 md:left-8 text-bordeaux/50 hover:text-bordeaux transition text-4xl md:text-5xl font-light select-none"
+              className="absolute left-4 md:left-8 text-red-400/80 hover:text-red-400 transition text-4xl md:text-5xl font-light select-none bg-slate-800/40 backdrop-blur-sm h-12 w-12 rounded-full flex items-center justify-center"
             >
-              ‹
+              ✗
             </button>
             <button
-              aria-label="Next"
+              aria-label="Know"
               onClick={() => handleCardSwipe(1)}
-              className="absolute right-4 md:right-8 text-bordeaux/50 hover:text-bordeaux transition text-4xl md:text-5xl font-light select-none"
+              className="absolute right-4 md:right-8 text-emerald-400/80 hover:text-emerald-400 transition text-4xl md:text-5xl font-light select-none bg-slate-800/40 backdrop-blur-sm h-12 w-12 rounded-full flex items-center justify-center"
             >
-              ›
+              ✓
             </button>
           </div>
           

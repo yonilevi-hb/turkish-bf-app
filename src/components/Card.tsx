@@ -1,6 +1,6 @@
-
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { FlipCard } from './FlipCard';
 
 interface CardProps {
   card: {
@@ -43,8 +43,6 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
       const utterance = new SpeechSynthesisUtterance(text);
       
       if (!reverse) {
-        // For Turkish text (when not reversed)
-        // First try to find a voice with Turkish language code
         const turkishVoice = availableVoices.find(voice => 
           voice.lang.includes('tr') || 
           voice.name.toLowerCase().includes('turkish')
@@ -55,11 +53,8 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
           utterance.voice = turkishVoice;
           utterance.lang = 'tr-TR';
         } else {
-          // If no Turkish voice is available, try to use a voice that might handle Turkish better
           console.log("No Turkish voice found. Attempting to find a suitable alternative...");
-          // Try to use a voice that might handle Turkish characters better
           const alternativeVoice = availableVoices.find(voice => 
-            // European voices might handle Turkish better than others
             voice.lang.includes('de') || voice.lang.includes('fr') || 
             voice.lang.includes('es') || voice.lang.includes('it')
           );
@@ -68,15 +63,12 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
             console.log("Using alternative voice for Turkish:", alternativeVoice.name);
             utterance.voice = alternativeVoice;
           } else {
-            // Fall back to default, but still set language to Turkish for better pronunciation
             console.log("Using default voice with Turkish language setting");
           }
           
-          // Always set language to Turkish for pronunciation rules
           utterance.lang = 'tr-TR';
         }
       } else {
-        // For English text (when reversed)
         const englishVoice = availableVoices.find(voice => 
           voice.lang.includes('en-GB') || 
           voice.lang.includes('en-US')
@@ -89,10 +81,8 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
         }
       }
       
-      // Slow down the speech rate for better clarity
       utterance.rate = 0.5;
       
-      // Log which text is being spoken and with which settings
       console.log(`Speaking "${text}" with voice ${utterance.voice?.name || 'default'} (${utterance.lang})`);
       
       window.speechSynthesis.speak(utterance);
@@ -101,14 +91,14 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
 
   return (
     <div className="select-none cursor-grab active:cursor-grabbing">
-      <div className="flex justify-between items-center mb-4 md:mb-6">
-        <motion.p 
-          className="text-xs md:text-sm text-indigo-300 font-medium uppercase tracking-wide"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+      <motion.div 
+        className="flex justify-between items-center mb-4 md:mb-6"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <p className="text-xs md:text-sm text-slate-900 font-medium uppercase tracking-wide">
           {dir}
-        </motion.p>
+        </p>
         {card.level !== undefined && (
           <motion.div 
             className="flex gap-1"
@@ -119,64 +109,44 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
               <div
                 key={i}
                 className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${
-                  i < card.level ? 'bg-gradient-to-r from-indigo-400 to-purple-400' : 'bg-slate-700'
+                  i < card.level ? 'bg-gradient-to-r from-blue-400 to-blue-600' : 'bg-slate-200'
                 }`}
               />
             ))}
           </motion.div>
         )}
-      </div>
+      </motion.div>
       
-      <motion.h3 
-        className="text-3xl md:text-6xl font-bold text-white text-center break-words"
-        onClick={() => setReveal(!reveal)}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-      >
-        {front}
-      </motion.h3>
+      <FlipCard 
+        front={front} 
+        back={back} 
+        onFlip={setReveal} 
+      />
       
       <motion.button
         onClick={() => speakText(front)}
-        className="mt-4 md:mt-6 px-6 py-2 md:px-8 md:py-3 bg-bordeaux hover:bg-bordeaux/80 rounded-full text-white transition-colors mx-auto block font-medium backdrop-blur-sm border border-white/20 text-base md:text-lg hover:scale-105"
+        className="mt-4 md:mt-6 px-6 py-2 md:px-8 md:py-3 bg-blue-500 hover:bg-blue-600 rounded-full text-white transition-colors mx-auto block font-medium text-base md:text-lg hover:scale-105"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
         🔊 Listen
       </motion.button>
       
-      {reveal ? (
+      {reveal && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: "spring", damping: 20 }}
         >
-          <motion.p 
-            className="text-xl md:text-2xl text-slate-300 mt-6 md:mt-8 text-center break-words"
-            onClick={() => setReveal(false)}
-            whileHover={{ scale: 1.02 }}
-          >
-            {back}
-          </motion.p>
           <motion.button
             onClick={() => speakText(back)}
-            className="mt-2 md:mt-3 px-6 py-2 md:px-8 md:py-3 bg-bordeaux hover:bg-bordeaux/80 rounded-full text-white transition-colors mx-auto block font-medium backdrop-blur-sm border border-white/20 text-base md:text-lg hover:scale-105"
+            className="mt-2 md:mt-3 px-6 py-2 md:px-8 md:py-3 bg-blue-500 hover:bg-blue-600 rounded-full text-white transition-colors mx-auto block font-medium text-base md:text-lg hover:scale-105"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
             🔊 Listen to translation
           </motion.button>
         </motion.div>
-      ) : (
-        <motion.p 
-          className="text-white/80 mt-6 md:mt-8 text-center text-base md:text-lg"
-          onClick={() => setReveal(true)}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          whileHover={{ scale: 1.02 }}
-        >
-          Tap to reveal
-        </motion.p>
       )}
     </div>
   );

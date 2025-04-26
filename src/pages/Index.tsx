@@ -97,31 +97,31 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-12 bg-gradient-to-br from-sky-100 to-blue-50 text-slate-50 p-8 font-['Inter']">
-      <header className="flex flex-col items-center gap-6 w-full max-w-4xl">
-        <div className="flex items-center gap-4">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-bordeaux to-bordeaux/80 flex items-center justify-center shadow-lg">
-            <span className="text-4xl font-bold text-white">Y</span>
+    <div className="min-h-[100dvh] flex flex-col items-center justify-start gap-6 bg-gradient-to-br from-sky-100 to-blue-50 text-slate-50 p-4 font-['Inter']">
+      <header className="flex flex-col items-center gap-4 w-full max-w-4xl pt-2">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-bordeaux to-bordeaux/80 flex items-center justify-center shadow-lg">
+            <span className="text-2xl md:text-4xl font-bold text-white">Y</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-bordeaux via-bordeaux/90 to-bordeaux/80">
+          <h1 className="text-3xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-bordeaux via-bordeaux/90 to-bordeaux/80">
             Yoni's 1st App
           </h1>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-4">
+        <div className="flex flex-wrap items-center justify-center gap-3">
           <div className="flex gap-2">
             <Button 
               variant={view === 'cards' ? "default" : "outline"}
               onClick={() => setView('cards')}
-              className="bg-indigo-600/80 hover:bg-indigo-500 text-white font-medium rounded-full px-6"
+              className="bg-indigo-600/80 hover:bg-indigo-500 text-white font-medium rounded-full px-4 py-2 text-sm"
             >
               Learn
             </Button>
             <Button 
               variant={view === 'list' ? "default" : "outline"}
               onClick={() => setView('list')}
-              className="bg-indigo-600/80 hover:bg-indigo-500 text-white font-medium rounded-full px-6"
+              className="bg-indigo-600/80 hover:bg-indigo-500 text-white font-medium rounded-full px-4 py-2 text-sm"
             >
-              Vocabulary List
+              Vocabulary
             </Button>
           </div>
           <FileUpload onCardsAdd={handleAddCards} />
@@ -129,8 +129,8 @@ export default function Index() {
       </header>
 
       {view === 'cards' ? (
-        <div className="flex flex-col items-center gap-8 w-full max-w-xl">
-          <div className="relative w-full h-96 flex items-center justify-center touch-pan-y">
+        <div className="flex flex-col items-center gap-6 w-full max-w-xl">
+          <div className="relative w-full h-[calc(100dvh-300px)] min-h-[400px] flex items-center justify-center touch-pan-y">
             <AnimatePresence custom={swipeDirection} initial={false} mode="wait">
               <motion.div
                 key={currentCard?.id + (reverse ? 'reverse' : 'normal')}
@@ -143,7 +143,7 @@ export default function Index() {
                 drag="x"
                 dragElastic={0.18}
                 onDragEnd={handleDragEnd}
-                className="absolute w-full h-auto px-12 py-16 bg-slate-800/40 backdrop-blur-2xl border border-slate-700/50 rounded-2xl shadow-2xl"
+                className="absolute w-full h-auto px-6 md:px-12 py-8 md:py-16 bg-slate-800/40 backdrop-blur-2xl border border-slate-700/50 rounded-2xl shadow-2xl"
               >
                 {currentCard && (
                   <Card
@@ -159,14 +159,14 @@ export default function Index() {
             <button
               aria-label="Don't Know"
               onClick={() => handleCardSwipe(1)}
-              className="absolute right-4 md:right-8 text-red-400/80 hover:text-red-400 transition text-5xl md:text-6xl font-light select-none bg-bordeaux/40 backdrop-blur-sm h-16 w-16 rounded-full flex items-center justify-center hover:scale-110 hover:bg-bordeaux/60"
+              className="absolute right-2 md:right-8 text-red-400/80 hover:text-red-400 transition text-4xl md:text-6xl font-light select-none bg-bordeaux/40 backdrop-blur-sm h-12 w-12 md:h-16 md:w-16 rounded-full flex items-center justify-center hover:scale-110 hover:bg-bordeaux/60"
             >
               ✗
             </button>
             <button
               aria-label="Know"
               onClick={() => handleCardSwipe(-1)}
-              className="absolute left-4 md:left-8 text-emerald-400/80 hover:text-emerald-400 transition text-5xl md:text-6xl font-light select-none bg-bordeaux/40 backdrop-blur-sm h-16 w-16 rounded-full flex items-center justify-center hover:scale-110 hover:bg-bordeaux/60"
+              className="absolute left-2 md:left-8 text-emerald-400/80 hover:text-emerald-400 transition text-4xl md:text-6xl font-light select-none bg-bordeaux/40 backdrop-blur-sm h-12 w-12 md:h-16 md:w-16 rounded-full flex items-center justify-center hover:scale-110 hover:bg-bordeaux/60"
             >
               ✓
             </button>

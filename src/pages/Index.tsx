@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { VocabularyList } from '@/components/VocabularyList';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -11,10 +12,21 @@ import { FileUpload } from '@/components/FileUpload';
 export default function Index() {
   const [[index, dir], setIndex] = useState([0, 0]);
   const [reveal, setReveal] = useState(false);
-  const [mode, setMode] = useState('random');
+  const [mode, setMode] = useState('he_en');
   const [reverse, setReverse] = useState(false);
   const [view, setView] = useState<'cards' | 'list'>('cards');
   const [cards, setCards] = useState(initialCards);
+
+  // Effect to handle the direction change based on mode
+  useEffect(() => {
+    if (mode === 'he_en') {
+      setReverse(false);
+    } else if (mode === 'en_he') {
+      setReverse(true);
+    } else if (mode === 'random') {
+      setReverse(Math.random() > 0.5);
+    }
+  }, [mode, index]); // Update when mode changes or when moving to next card
 
   const handleAddCards = (newCards: { word: string; translation: string; }[]) => {
     const newCardsWithIds = newCards.map((card, idx) => ({
@@ -26,7 +38,13 @@ export default function Index() {
 
   const paginate = (d: number) => {
     setReveal(false);
-    setIndex(([i]) => [(i + d + initialCards.length) % initialCards.length, d]);
+    setIndex(([i]) => {
+      // If in random mode, update the reverse state for the next card
+      if (mode === 'random') {
+        setReverse(Math.random() > 0.5);
+      }
+      return [(i + d + cards.length) % cards.length, d];
+    });
   };
 
   const handleDragEnd = (_e: any, { offset, velocity }: any) => {
@@ -82,7 +100,7 @@ export default function Index() {
         <div className="relative w-full max-w-xl h-96 flex items-center justify-center touch-pan-y">
           <AnimatePresence custom={dir} initial={false} mode="wait">
             <motion.div
-              key={cards[index].id + reverse}
+              key={cards[index].id + (reverse ? 'reverse' : 'normal')}
               custom={dir}
               variants={variants}
               initial="enter"

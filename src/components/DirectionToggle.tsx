@@ -12,16 +12,16 @@ export function DirectionToggle({ mode, setMode }: DirectionToggleProps) {
   ];
 
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-4">
       {btns.map(b => (
         <button
           key={b.id}
           onClick={() => setMode(b.id)}
           title={b.label}
-          className={`px-6 py-2 rounded-full text-base transition backdrop-blur-sm ${
+          className={`px-8 py-3 rounded-full text-xl transition backdrop-blur-sm hover:scale-105 ${
             mode === b.id
-              ? 'bg-indigo-600/90 text-white shadow-lg ring-2 ring-indigo-400/30'
-              : 'text-slate-300 hover:bg-slate-700/50 border border-slate-600/30'
+              ? 'bg-bordeaux text-white shadow-lg ring-2 ring-white/30'
+              : 'text-bordeaux hover:bg-bordeaux/10 border-2 border-bordeaux/30'
           }`}
         >
           {b.label}

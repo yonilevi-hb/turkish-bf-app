@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { VocabularyList } from '@/components/VocabularyList';
@@ -19,7 +18,6 @@ export default function Index() {
   const [swipeDirection, setSwipeDirection] = useState(0);
   const [showFeedback, setShowFeedback] = useState(true);
   
-  // Initialize cards with learning metadata
   const [cards, setCards] = useState(() => 
     initialCards.map(card => ({
       ...card,
@@ -30,7 +28,6 @@ export default function Index() {
   
   const [currentCard, setCurrentCard] = useState(() => getNextCard(cards));
 
-  // Handle file uploads
   const handleAddCards = (newCards: any[]) => {
     const cardsWithMetadata = newCards.map(card => ({
       ...card,
@@ -42,7 +39,6 @@ export default function Index() {
     toast(`Added ${newCards.length} new cards!`);
   };
 
-  // Effect to update current card when needed
   useEffect(() => {
     if (!currentCard) {
       const nextCard = getNextCard(cards);
@@ -54,7 +50,6 @@ export default function Index() {
     }
   }, [currentCard, cards]);
 
-  // Effect to handle direction mode
   useEffect(() => {
     if (mode === 'he_en') {
       setReverse(false);
@@ -69,27 +64,22 @@ export default function Index() {
     if (!currentCard) return;
     
     setReveal(false);
-    // FIXED: Swapped the logic - left (negative) now means "don't know" (more frequent)
     const isRight = direction > 0;
     
-    // Update card's spaced repetition data
-    const updatedCard = handleSwipe(currentCard, !isRight); // Inverting logic here
+    const updatedCard = handleSwipe(currentCard, isRight);
     setCards(prevCards => 
       prevCards.map(card => 
         card.id === updatedCard.id ? updatedCard : card
       )
     );
     
-    // Only show feedback occasionally
     if (showFeedback) {
-      toast(!isRight ? "Good job! You'll see this card less often." : "Keep practicing! You'll see this card more frequently.");
+      toast(isRight ? "Keep practicing! You'll see this card more frequently." : "Good job! You'll see this card less often.");
       setShowFeedback(false);
-      // Reset feedback flag after some time
       setTimeout(() => setShowFeedback(true), 60000);
     }
     
-    // Set next card
-    setCurrentCard(null); // This will trigger the useEffect to find the next card
+    setCurrentCard(null);
     setSwipeDirection(direction);
   };
 
@@ -106,19 +96,14 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-12 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-50 p-8 font-['Inter']">
-      {/* Header */}
+    <div className="min-h-screen flex flex-col items-center justify-center gap-12 bg-gradient-to-br from-sky-100 to-blue-50 text-slate-50 p-8 font-['Inter']">
       <header className="flex flex-col items-center gap-6 w-full max-w-4xl">
         <div className="flex items-center gap-4">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-            <img
-              src="https://img.icons8.com/fluency/96/language-skill.png"
-              alt="logo"
-              className="w-12 h-12 filter drop-shadow"
-            />
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-bordeaux to-bordeaux/80 flex items-center justify-center shadow-lg">
+            <span className="text-4xl font-bold text-white">Y</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400">
-            Polyglot
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-bordeaux via-bordeaux/90 to-bordeaux/80">
+            Yoni's 1st App
           </h1>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-4">
@@ -142,7 +127,6 @@ export default function Index() {
         </div>
       </header>
 
-      {/* Main Content */}
       {view === 'cards' ? (
         <div className="flex flex-col items-center gap-8 w-full max-w-xl">
           <div className="relative w-full h-96 flex items-center justify-center touch-pan-y">
@@ -173,21 +157,20 @@ export default function Index() {
 
             <button
               aria-label="Don't Know"
-              onClick={() => handleCardSwipe(-1)}
-              className="absolute left-4 md:left-8 text-red-400/80 hover:text-red-400 transition text-4xl md:text-5xl font-light select-none bg-slate-800/40 backdrop-blur-sm h-12 w-12 rounded-full flex items-center justify-center"
+              onClick={() => handleCardSwipe(1)}
+              className="absolute right-4 md:right-8 text-red-400/80 hover:text-red-400 transition text-5xl md:text-6xl font-light select-none bg-bordeaux/40 backdrop-blur-sm h-16 w-16 rounded-full flex items-center justify-center hover:scale-110 hover:bg-bordeaux/60"
             >
               ✗
             </button>
             <button
               aria-label="Know"
-              onClick={() => handleCardSwipe(1)}
-              className="absolute right-4 md:right-8 text-emerald-400/80 hover:text-emerald-400 transition text-4xl md:text-5xl font-light select-none bg-slate-800/40 backdrop-blur-sm h-12 w-12 rounded-full flex items-center justify-center"
+              onClick={() => handleCardSwipe(-1)}
+              className="absolute left-4 md:left-8 text-emerald-400/80 hover:text-emerald-400 transition text-5xl md:text-6xl font-light select-none bg-bordeaux/40 backdrop-blur-sm h-16 w-16 rounded-full flex items-center justify-center hover:scale-110 hover:bg-bordeaux/60"
             >
               ✓
             </button>
           </div>
           
-          {/* Language toggle moved to bottom */}
           <DirectionToggle mode={mode} setMode={setMode} />
         </div>
       ) : (

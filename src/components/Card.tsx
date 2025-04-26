@@ -14,39 +14,11 @@ interface CardProps {
   reverse: boolean;
 }
 
-const getImageUrl = (word: string) => {
-  return `https://source.unsplash.com/400x300/?${encodeURIComponent(word)}`;
-};
-
 export function Card({ card, reveal, setReveal, reverse }: CardProps) {
   const front = reverse ? card.translation : card.word;
   const back = reverse ? card.word : card.translation;
   const dir = reverse ? '🇬🇧→🇹🇷' : '🇹🇷→🇬🇧';
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [imageUrl, setImageUrl] = useState<string>('');
-  const [isImageLoading, setIsImageLoading] = useState(false);
-
-  useEffect(() => {
-    if (reveal) {
-      setIsImageLoading(true);
-      const keyword = reverse ? back : front;
-      const imgUrl = getImageUrl(keyword);
-      
-      const img = new Image();
-      img.onload = () => {
-        setImageUrl(imgUrl);
-        setIsImageLoading(false);
-      };
-      img.onerror = () => {
-        console.log("Failed to load image for:", keyword);
-        setIsImageLoading(false);
-        setImageUrl(`https://source.unsplash.com/400x300/?vocabulary`);
-      };
-      img.src = imgUrl;
-    } else {
-      setImageUrl('');
-    }
-  }, [reveal, card.word, front, back, reverse]);
 
   useEffect(() => {
     const loadVoices = () => {
@@ -150,8 +122,6 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
         front={front} 
         back={back} 
         onFlip={setReveal}
-        image={imageUrl}
-        isImageLoading={isImageLoading}
       />
       
       <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center italic">

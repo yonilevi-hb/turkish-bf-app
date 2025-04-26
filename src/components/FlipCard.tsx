@@ -6,11 +6,9 @@ interface FlipCardProps {
   front: string;
   back: string;
   onFlip: (isRevealed: boolean) => void;
-  image?: string;
-  isImageLoading?: boolean;
 }
 
-export function FlipCard({ front, back, onFlip, image, isImageLoading = false }: FlipCardProps) {
+export function FlipCard({ front, back, onFlip }: FlipCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleFlip = () => {
@@ -45,23 +43,6 @@ export function FlipCard({ front, back, onFlip, image, isImageLoading = false }:
           style={{ transform: "rotateY(180deg)" }}
         >
           <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-black dark:border-gray-600">
-            {isImageLoading ? (
-              <div className="w-full h-24 mb-4 flex items-center justify-center bg-slate-100 dark:bg-slate-700 rounded-lg">
-                <div className="animate-pulse flex space-x-2">
-                  <div className="w-3 h-3 bg-slate-300 dark:bg-slate-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-slate-300 dark:bg-slate-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-slate-300 dark:bg-slate-500 rounded-full"></div>
-                </div>
-              </div>
-            ) : image ? (
-              <div className="w-full h-24 mb-4 overflow-hidden rounded-lg">
-                <img 
-                  src={image} 
-                  alt={back} 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            ) : null}
             <p className="text-xl md:text-2xl text-black dark:text-white">
               {back}
             </p>

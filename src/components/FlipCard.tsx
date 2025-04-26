@@ -32,7 +32,7 @@ export function FlipCard({ front, back, onFlip, image, isImageLoading = false }:
       >
         {/* Front of card */}
         <div className="absolute w-full h-full backface-hidden">
-          <div className="w-full h-full flex items-center justify-center bg-white dark:bg-cardBg-dark rounded-xl shadow-lg p-6 border border-black dark:border-gray-600">
+          <div className="w-full h-full flex items-center justify-center bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-black dark:border-gray-600">
             <h3 className="text-3xl md:text-6xl font-bold text-black dark:text-white">
               {front}
             </h3>
@@ -44,7 +44,7 @@ export function FlipCard({ front, back, onFlip, image, isImageLoading = false }:
           className="absolute w-full h-full backface-hidden"
           style={{ transform: "rotateY(180deg)" }}
         >
-          <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-cardBg-dark rounded-xl shadow-lg p-6 border border-black dark:border-gray-600">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-black dark:border-gray-600">
             {isImageLoading ? (
               <div className="w-full h-24 mb-4 flex items-center justify-center bg-slate-100 dark:bg-slate-700 rounded-lg">
                 <div className="animate-pulse flex space-x-2">

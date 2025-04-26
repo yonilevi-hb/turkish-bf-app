@@ -1,3 +1,4 @@
+
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { FlipCard } from './FlipCard';
@@ -152,6 +153,10 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
         image={imageUrl}
         isImageLoading={isImageLoading}
       />
+      
+      <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center italic">
+        Swipe right if known, left if unknown
+      </div>
       
       <motion.button
         onClick={() => speakText(front)}

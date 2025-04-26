@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { VocabularyList } from '@/components/VocabularyList';
@@ -15,6 +16,7 @@ export default function Index() {
   const [mode, setMode] = useState('he_en');
   const [reverse, setReverse] = useState(false);
   const [view, setView] = useState<'cards' | 'list'>('cards');
+  const [swipeDirection, setSwipeDirection] = useState(0);
   
   // Initialize cards with learning metadata
   const [cards, setCards] = useState(() => 
@@ -26,6 +28,18 @@ export default function Index() {
   );
   
   const [currentCard, setCurrentCard] = useState(() => getNextCard(cards));
+
+  // Handle file uploads
+  const handleAddCards = (newCards: any[]) => {
+    const cardsWithMetadata = newCards.map(card => ({
+      ...card,
+      level: 0,
+      nextReview: Date.now()
+    }));
+    
+    setCards(prevCards => [...prevCards, ...cardsWithMetadata]);
+    toast(`Added ${newCards.length} new cards!`);
+  };
 
   // Effect to update current card when needed
   useEffect(() => {
@@ -69,6 +83,7 @@ export default function Index() {
     
     // Set next card
     setCurrentCard(null); // This will trigger the useEffect to find the next card
+    setSwipeDirection(direction);
   };
 
   const handleDragEnd = (_e: any, { offset, velocity }: any) => {
@@ -78,9 +93,9 @@ export default function Index() {
   };
 
   const variants = {
-    enter: (d: number) => ({ x: d > 0 ? 300 : -300, opacity: 0 }),
+    enter: (direction: number) => ({ x: direction > 0 ? 300 : -300, opacity: 0 }),
     center: { x: 0, opacity: 1 },
-    exit: (d: number) => ({ x: d > 0 ? -300 : 300, opacity: 0 })
+    exit: (direction: number) => ({ x: direction > 0 ? -300 : 300, opacity: 0 })
   };
 
   return (
@@ -98,14 +113,13 @@ export default function Index() {
           </h1>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-4">
-          <DirectionToggle mode={mode} setMode={setMode} />
           <div className="flex gap-2">
             <Button 
               variant={view === 'cards' ? "default" : "outline"}
               onClick={() => setView('cards')}
               className="bg-bordeaux/80 hover:bg-bordeaux text-eggwhite"
             >
-              Flashcards
+              Learn
             </Button>
             <Button 
               variant={view === 'list' ? "default" : "outline"}
@@ -121,46 +135,51 @@ export default function Index() {
 
       {/* Main Content */}
       {view === 'cards' ? (
-        <div className="relative w-full max-w-xl h-96 flex items-center justify-center touch-pan-y">
-          <AnimatePresence custom={dir} initial={false} mode="wait">
-            <motion.div
-              key={currentCard?.id + (reverse ? 'reverse' : 'normal')}
-              custom={dir}
-              variants={variants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-              drag="x"
-              dragElastic={0.18}
-              onDragEnd={handleDragEnd}
-              className="absolute w-full h-auto px-12 py-16 bg-eggwhite/5 backdrop-blur-sm border border-eggwhite/10 rounded-3xl shadow-2xl"
-            >
-              {currentCard && (
-                <Card
-                  card={currentCard}
-                  reveal={reveal}
-                  setReveal={setReveal}
-                  reverse={reverse}
-                />
-              )}
-            </motion.div>
-          </AnimatePresence>
+        <div className="flex flex-col items-center gap-8 w-full max-w-xl">
+          <div className="relative w-full h-96 flex items-center justify-center touch-pan-y">
+            <AnimatePresence custom={swipeDirection} initial={false} mode="wait">
+              <motion.div
+                key={currentCard?.id + (reverse ? 'reverse' : 'normal')}
+                custom={swipeDirection}
+                variants={variants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                drag="x"
+                dragElastic={0.18}
+                onDragEnd={handleDragEnd}
+                className="absolute w-full h-auto px-12 py-16 bg-eggwhite/5 backdrop-blur-sm border border-eggwhite/10 rounded-3xl shadow-2xl"
+              >
+                {currentCard && (
+                  <Card
+                    card={currentCard}
+                    reveal={reveal}
+                    setReveal={setReveal}
+                    reverse={reverse}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
 
-          <button
-            aria-label="Previous"
-            onClick={() => handleCardSwipe(-1)}
-            className="absolute left-4 md:left-8 text-bordeaux/50 hover:text-bordeaux transition text-4xl md:text-5xl font-light select-none"
-          >
-            ‹
-          </button>
-          <button
-            aria-label="Next"
-            onClick={() => handleCardSwipe(1)}
-            className="absolute right-4 md:right-8 text-bordeaux/50 hover:text-bordeaux transition text-4xl md:text-5xl font-light select-none"
-          >
-            ›
-          </button>
+            <button
+              aria-label="Previous"
+              onClick={() => handleCardSwipe(-1)}
+              className="absolute left-4 md:left-8 text-bordeaux/50 hover:text-bordeaux transition text-4xl md:text-5xl font-light select-none"
+            >
+              ‹
+            </button>
+            <button
+              aria-label="Next"
+              onClick={() => handleCardSwipe(1)}
+              className="absolute right-4 md:right-8 text-bordeaux/50 hover:text-bordeaux transition text-4xl md:text-5xl font-light select-none"
+            >
+              ›
+            </button>
+          </div>
+          
+          {/* Language toggle moved to bottom */}
+          <DirectionToggle mode={mode} setMode={setMode} />
         </div>
       ) : (
         <VocabularyList cards={cards} />

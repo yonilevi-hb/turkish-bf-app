@@ -1,4 +1,6 @@
 
+import React from 'react';
+
 interface DirectionToggleProps {
   mode: string;
   setMode: (mode: string) => void;
@@ -6,8 +8,8 @@ interface DirectionToggleProps {
 
 export function DirectionToggle({ mode, setMode }: DirectionToggleProps) {
   const btns = [
-    { id: 'he_en', label: '🇮🇱→🇺🇸' },
-    { id: 'en_he', label: '🇺🇸→🇮🇱' },
+    { id: 'tr_en', label: '🇹🇷→🇬🇧' },
+    { id: 'en_tr', label: '🇬🇧→🇹🇷' },
     { id: 'random', label: '🔀' }
   ];
 

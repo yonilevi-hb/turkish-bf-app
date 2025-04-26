@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { VocabularyList } from '@/components/VocabularyList';
@@ -12,7 +13,7 @@ import { toast } from "sonner";
 
 export default function Index() {
   const [reveal, setReveal] = useState(false);
-  const [mode, setMode] = useState('he_en');
+  const [mode, setMode] = useState('tr_en');
   const [reverse, setReverse] = useState(false);
   const [view, setView] = useState<'cards' | 'list'>('cards');
   const [swipeDirection, setSwipeDirection] = useState(0);
@@ -51,9 +52,9 @@ export default function Index() {
   }, [currentCard, cards]);
 
   useEffect(() => {
-    if (mode === 'he_en') {
+    if (mode === 'tr_en') {
       setReverse(false);
-    } else if (mode === 'en_he') {
+    } else if (mode === 'en_tr') {
       setReverse(true);
     } else if (mode === 'random') {
       setReverse(Math.random() > 0.5);

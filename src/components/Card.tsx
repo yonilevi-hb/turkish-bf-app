@@ -1,3 +1,4 @@
+
 import { motion } from 'framer-motion';
 
 interface CardProps {
@@ -27,6 +28,9 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
         utterance.voice = hebrewVoice;
         utterance.lang = 'he-IL';
       }
+      
+      // Slow down speech rate by 25%
+      utterance.rate = 0.75;
       
       window.speechSynthesis.speak(utterance);
     }

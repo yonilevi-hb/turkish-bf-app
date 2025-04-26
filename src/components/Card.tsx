@@ -1,3 +1,4 @@
+
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
@@ -42,6 +43,8 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
       const utterance = new SpeechSynthesisUtterance(text);
       
       if (!reverse) {
+        // For Turkish text (when not reversed)
+        // First try to find a voice with Turkish language code
         const turkishVoice = availableVoices.find(voice => 
           voice.lang.includes('tr') || 
           voice.name.toLowerCase().includes('turkish')
@@ -52,9 +55,28 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
           utterance.voice = turkishVoice;
           utterance.lang = 'tr-TR';
         } else {
-          console.log("No Turkish voice found, using default");
+          // If no Turkish voice is available, try to use a voice that might handle Turkish better
+          console.log("No Turkish voice found. Attempting to find a suitable alternative...");
+          // Try to use a voice that might handle Turkish characters better
+          const alternativeVoice = availableVoices.find(voice => 
+            // European voices might handle Turkish better than others
+            voice.lang.includes('de') || voice.lang.includes('fr') || 
+            voice.lang.includes('es') || voice.lang.includes('it')
+          );
+          
+          if (alternativeVoice) {
+            console.log("Using alternative voice for Turkish:", alternativeVoice.name);
+            utterance.voice = alternativeVoice;
+          } else {
+            // Fall back to default, but still set language to Turkish for better pronunciation
+            console.log("Using default voice with Turkish language setting");
+          }
+          
+          // Always set language to Turkish for pronunciation rules
+          utterance.lang = 'tr-TR';
         }
       } else {
+        // For English text (when reversed)
         const englishVoice = availableVoices.find(voice => 
           voice.lang.includes('en-GB') || 
           voice.lang.includes('en-US')
@@ -67,7 +89,11 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
         }
       }
       
+      // Slow down the speech rate for better clarity
       utterance.rate = 0.5;
+      
+      // Log which text is being spoken and with which settings
+      console.log(`Speaking "${text}" with voice ${utterance.voice?.name || 'default'} (${utterance.lang})`);
       
       window.speechSynthesis.speak(utterance);
     }

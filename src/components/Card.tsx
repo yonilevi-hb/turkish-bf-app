@@ -18,12 +18,8 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
 
   const speakText = (text: string) => {
     if ('speechSynthesis' in window) {
-      // Cancel any ongoing speech
       window.speechSynthesis.cancel();
-      
       const utterance = new SpeechSynthesisUtterance(text);
-      
-      // Try to find a Hebrew voice if available
       const voices = window.speechSynthesis.getVoices();
       const hebrewVoice = voices.find(voice => voice.lang.includes('he'));
       
@@ -38,45 +34,63 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
 
   return (
     <div className="select-none cursor-grab active:cursor-grabbing">
-      <p className="text-sm text-bordeaux/70 mb-1 font-medium uppercase tracking-wide text-center">{dir}</p>
-      <h3 
-        className="text-5xl md:text-6xl font-extrabold text-bordeaux text-center break-words" 
+      <motion.p 
+        className="text-sm text-bordeaux/70 mb-1 font-medium uppercase tracking-wide text-center"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        {dir}
+      </motion.p>
+      <motion.h3 
+        className="text-5xl md:text-6xl font-extrabold text-bordeaux text-center break-words"
         onClick={() => setReveal(!reveal)}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
       >
         {front}
-      </h3>
+      </motion.h3>
       
-      <button
+      <motion.button
         onClick={() => speakText(front)}
-        className="mt-4 px-3 py-1 bg-bordeaux/10 hover:bg-bordeaux/20 rounded-full text-bordeaux transition-colors mx-auto block"
-        aria-label="Listen to pronunciation"
+        className="mt-4 px-4 py-2 bg-bordeaux/10 hover:bg-bordeaux/20 rounded-full text-bordeaux transition-colors mx-auto block font-medium backdrop-blur-sm border border-bordeaux/10"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
       >
         🔊 Listen
-      </button>
+      </motion.button>
       
       {reveal ? (
-        <div>
-          <p 
-            className="text-2xl text-bordeaux/80 mt-6 text-center break-words" 
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", damping: 20 }}
+        >
+          <motion.p 
+            className="text-2xl text-bordeaux/80 mt-6 text-center break-words"
             onClick={() => setReveal(false)}
+            whileHover={{ scale: 1.02 }}
           >
             {back}
-          </p>
-          <button
+          </motion.p>
+          <motion.button
             onClick={() => speakText(back)}
-            className="mt-2 px-3 py-1 bg-bordeaux/10 hover:bg-bordeaux/20 rounded-full text-bordeaux transition-colors mx-auto block"
-            aria-label="Listen to translation pronunciation"
+            className="mt-2 px-4 py-2 bg-bordeaux/10 hover:bg-bordeaux/20 rounded-full text-bordeaux transition-colors mx-auto block font-medium backdrop-blur-sm border border-bordeaux/10"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             🔊 Listen to translation
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       ) : (
-        <p 
-          className="text-bordeaux/60 mt-6 italic text-center" 
+        <motion.p 
+          className="text-bordeaux/60 mt-6 italic text-center"
           onClick={() => setReveal(true)}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          whileHover={{ scale: 1.02 }}
         >
           Tap to reveal
-        </p>
+        </motion.p>
       )}
     </div>
   );

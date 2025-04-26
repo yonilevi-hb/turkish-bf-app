@@ -20,8 +20,8 @@ export function DirectionToggle({ mode, setMode }: DirectionToggleProps) {
           title={b.label}
           className={`px-4 py-2 rounded-md text-base transition backdrop-blur-sm ${
             mode === b.id
-              ? 'bg-indigo-600/80 text-white shadow-lg'
-              : 'text-indigo-200 hover:bg-white/5 border border-white/10'
+              ? 'bg-bordeaux/80 text-eggwhite shadow-lg'
+              : 'text-bordeaux hover:bg-bordeaux/10 border border-bordeaux/10'
           }`}
         >
           {b.label}

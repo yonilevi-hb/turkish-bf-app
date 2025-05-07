@@ -47,13 +47,13 @@ export function FlipCard({
         {/* Front of card */}
         <div className="absolute w-full h-full backface-hidden">
           <div className="w-full h-full flex items-center justify-center bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-gray-600 transform-gpu">
-            <h3 className="text-4xl md:text-6xl font-bold text-slate-800 dark:text-slate-100">
+            <h3 className="text-4xl md:text-6xl font-bold text-slate-800 dark:text-white">
               {front}
             </h3>
             
             {/* Show the favorite status directly on the front with a small indicator */}
             {id && isFavorite && (
-              <div className="absolute top-3 left-3 h-3 w-3 rounded-full bg-yellow-400"></div>
+              <div className="absolute top-3 left-3 h-4 w-4 rounded-full bg-yellow-400 animate-pulse"></div>
             )}
           </div>
         </div>
@@ -64,21 +64,21 @@ export function FlipCard({
           style={{ transform: "rotateY(180deg)" }}
         >
           <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-gray-600 transform-gpu">
-            <p className="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-medium">
+            <p className="text-2xl md:text-3xl text-slate-800 dark:text-white font-medium">
               {back}
             </p>
           </div>
         </div>
       </motion.div>
 
-      {/* Favorites Star Button - enhanced visibility and clearer color feedback */}
+      {/* Favorites Star Button - Enhanced visibility, animation, and better color feedback */}
       {id && onToggleFavorite && (
         <button 
-          className={`absolute top-3 right-3 z-20 p-2 rounded-full ${
+          className={`absolute top-3 right-3 z-20 p-2 rounded-full transition-all duration-300 ${
             isFavorite 
-              ? 'bg-yellow-100/80 dark:bg-yellow-900/50 hover:bg-yellow-200 dark:hover:bg-yellow-800/60' 
+              ? 'bg-yellow-100/80 dark:bg-yellow-900/50 hover:bg-yellow-200 dark:hover:bg-yellow-800/60 scale-110' 
               : 'bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-700'
-          } transition-colors shadow-sm`}
+          } shadow-sm`}
           onClick={(e) => {
             e.stopPropagation();
             onToggleFavorite();
@@ -88,8 +88,8 @@ export function FlipCard({
           <Star 
             size={24} 
             className={isFavorite 
-              ? "fill-yellow-400 text-yellow-500 dark:text-yellow-400" 
-              : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              ? "fill-yellow-400 text-yellow-500 dark:text-yellow-400 transition-all duration-300" 
+              : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-all duration-300"
             } 
           />
         </button>

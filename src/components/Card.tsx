@@ -94,11 +94,14 @@ export function Card({ card, reveal, setReveal, reverse, onSwipe }: CardProps) {
     }
   };
 
+  // Improved drag end handler for better swipe detection
   const handleDragEnd = (e: any, info: any) => {
+    // Calculate swipe power based on velocity and offset
     const swipe = swipePower(info.offset.x, info.velocity.x);
+    const direction = info.offset.x > 0 ? 1 : -1;
     
+    // Check if the swipe exceeds our threshold
     if (Math.abs(swipe) > SWIPE_THRESHOLD) {
-      const direction = info.offset.x > 0 ? 1 : -1;
       setSwipeDirection(direction);
       
       // Delay the onSwipe call to allow the animation to play
@@ -140,17 +143,21 @@ export function Card({ card, reveal, setReveal, reverse, onSwipe }: CardProps) {
       <motion.div
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.8}
+        dragElastic={0.6} // Reduced elasticity for more natural feel
         onDragEnd={handleDragEnd}
-        whileDrag={{ scale: 1.02, cursor: "grabbing" }}
+        whileDrag={{ 
+          scale: 1.02, 
+          cursor: "grabbing",
+          boxShadow: "0px 10px 25px rgba(0,0,0,0.1)" // Add shadow while dragging
+        }}
         animate={
           swipeDirection !== null
             ? {
-                x: swipeDirection > 0 ? 1000 : -1000,
+                x: swipeDirection > 0 ? 1000 : -1000, // Exit in the correct direction
                 opacity: 0,
-                rotate: swipeDirection > 0 ? 10 : -10,
+                rotate: swipeDirection > 0 ? 5 : -5, // Reduced rotation for more subtle effect
                 transition: { 
-                  duration: 0.5, 
+                  duration: 0.4, 
                   ease: [0.32, 0.72, 0, 1] // Custom bezier curve for smoother easing
                 }
               }
@@ -160,9 +167,8 @@ export function Card({ card, reveal, setReveal, reverse, onSwipe }: CardProps) {
                 rotate: 0,
                 transition: {
                   type: "spring",
-                  stiffness: 300,
-                  damping: 30,
-                  mass: 0.8
+                  stiffness: 500, // Increased stiffness for faster snapping back
+                  damping: 25, // Adjusted damping for natural movement
                 }
               }
         }
@@ -180,10 +186,12 @@ export function Card({ card, reveal, setReveal, reverse, onSwipe }: CardProps) {
         />
       </motion.div>
       
-      <div className="mt-4 text-sm text-gray-600 dark:text-gray-300 text-center">
-        <span className="flex items-center justify-center gap-2">
-          <span className="px-2 py-1 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-full text-xs">Swipe left 👈 if unknown</span>
-          <span className="px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full text-xs">Swipe right 👉 if known</span>
+      <div className="mt-6 text-sm flex justify-center gap-3">
+        <span className="px-3 py-1.5 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-full text-sm font-medium flex items-center">
+          <span className="mr-1">👈</span> Swipe left: "I don't know"
+        </span>
+        <span className="px-3 py-1.5 bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full text-sm font-medium flex items-center">
+          <span className="mr-1">👉</span> Swipe right: "I know this"
         </span>
       </div>
       

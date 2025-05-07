@@ -26,16 +26,16 @@ export function FlipCard({ front, back, onFlip }: FlipCardProps) {
         initial={false}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
         transition={{ 
-          duration: 0.5, 
+          duration: 0.6, 
           type: "spring", 
-          stiffness: 350, 
-          damping: 25 
+          stiffness: 300, 
+          damping: 20 
         }}
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* Front of card */}
         <div className="absolute w-full h-full backface-hidden">
-          <div className="w-full h-full flex items-center justify-center bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-gray-600">
+          <div className="w-full h-full flex items-center justify-center bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-gray-600 transform-gpu">
             <h3 className="text-4xl md:text-6xl font-bold text-slate-800 dark:text-slate-100">
               {front}
             </h3>
@@ -47,7 +47,7 @@ export function FlipCard({ front, back, onFlip }: FlipCardProps) {
           className="absolute w-full h-full backface-hidden"
           style={{ transform: "rotateY(180deg)" }}
         >
-          <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-gray-600">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-gray-600 transform-gpu">
             <p className="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-medium">
               {back}
             </p>

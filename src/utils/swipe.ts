@@ -1,6 +1,8 @@
 
-export const SWIPE_THRESHOLD = 7000; // Reduced from 10000 for better sensitivity
+// Lower threshold makes swipes more responsive
+export const SWIPE_THRESHOLD = 50; // Significantly reduced from 7000 for better responsiveness
 
+// Improved swipe power calculation for more natural feeling
 export const swipePower = (offset: number, velocity: number): number => {
-  return Math.abs(offset) * Math.abs(velocity) * 0.8; // Added factor for better control
+  return Math.abs(offset) * velocity; // Removed additional factor for more direct control
 };

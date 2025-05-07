@@ -50,6 +50,11 @@ export function FlipCard({
             <h3 className="text-4xl md:text-6xl font-bold text-slate-800 dark:text-slate-100">
               {front}
             </h3>
+            
+            {/* Show the favorite status directly on the front with a small indicator */}
+            {id && isFavorite && (
+              <div className="absolute top-3 left-3 h-3 w-3 rounded-full bg-yellow-400"></div>
+            )}
           </div>
         </div>
 
@@ -66,10 +71,14 @@ export function FlipCard({
         </div>
       </motion.div>
 
-      {/* Favorites Star Button - enhanced visibility */}
+      {/* Favorites Star Button - enhanced visibility and clearer color feedback */}
       {id && onToggleFavorite && (
         <button 
-          className="absolute top-3 right-3 z-20 p-2 rounded-full bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-700 transition-colors shadow-sm"
+          className={`absolute top-3 right-3 z-20 p-2 rounded-full ${
+            isFavorite 
+              ? 'bg-yellow-100/80 dark:bg-yellow-900/50 hover:bg-yellow-200 dark:hover:bg-yellow-800/60' 
+              : 'bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-700'
+          } transition-colors shadow-sm`}
           onClick={(e) => {
             e.stopPropagation();
             onToggleFavorite();
@@ -79,7 +88,7 @@ export function FlipCard({
           <Star 
             size={24} 
             className={isFavorite 
-              ? "fill-yellow-400 text-yellow-400" 
+              ? "fill-yellow-400 text-yellow-500 dark:text-yellow-400" 
               : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             } 
           />

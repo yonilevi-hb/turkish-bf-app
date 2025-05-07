@@ -71,10 +71,10 @@ export function FlipCard({
         </div>
       </motion.div>
 
-      {/* Favorites Star Button - Enhanced visibility, animation, and better color feedback */}
+      {/* Favorites Star Button - Enhanced visibility and fixed color feedback */}
       {id && onToggleFavorite && (
         <button 
-          className={`absolute top-3 right-3 z-20 p-2 rounded-full transition-all duration-300 ${
+          className={`absolute top-3 right-3 z-20 p-2 rounded-full transition-colors duration-300 ${
             isFavorite 
               ? 'bg-yellow-100/80 dark:bg-yellow-900/50 hover:bg-yellow-200 dark:hover:bg-yellow-800/60 scale-110' 
               : 'bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-700'
@@ -88,8 +88,8 @@ export function FlipCard({
           <Star 
             size={24} 
             className={isFavorite 
-              ? "fill-yellow-400 text-yellow-500 dark:text-yellow-400 transition-all duration-300" 
-              : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-all duration-300"
+              ? "fill-yellow-400 text-yellow-400 dark:text-yellow-400" 
+              : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             } 
           />
         </button>

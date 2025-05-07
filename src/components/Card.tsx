@@ -1,8 +1,8 @@
-
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { FlipCard } from './FlipCard';
 import { Volume2 } from 'lucide-react';
+import { swipePower, SWIPE_THRESHOLD } from '@/utils/swipe';
 
 interface CardProps {
   card: {
@@ -94,15 +94,16 @@ export function Card({ card, reveal, setReveal, reverse, onSwipe }: CardProps) {
     }
   };
 
-  const handleDragEnd = (e: any, { offset, velocity }: any) => {
-    const swipe = Math.abs(offset.x) * velocity.x;
+  const handleDragEnd = (e: any, info: any) => {
+    const swipe = swipePower(info.offset.x, info.velocity.x);
     
-    if (Math.abs(offset.x) > 100) {
-      setSwipeDirection(offset.x > 0 ? 1 : -1);
+    if (Math.abs(swipe) > SWIPE_THRESHOLD) {
+      const direction = info.offset.x > 0 ? 1 : -1;
+      setSwipeDirection(direction);
       
       // Delay the onSwipe call to allow the animation to play
       setTimeout(() => {
-        onSwipe(offset.x > 0 ? 1 : -1);
+        onSwipe(direction);
         setSwipeDirection(null);
       }, 300);
     }
@@ -139,19 +140,30 @@ export function Card({ card, reveal, setReveal, reverse, onSwipe }: CardProps) {
       <motion.div
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.7}
+        dragElastic={0.8}
         onDragEnd={handleDragEnd}
+        whileDrag={{ scale: 1.02, cursor: "grabbing" }}
         animate={
           swipeDirection !== null
             ? {
                 x: swipeDirection > 0 ? 1000 : -1000,
                 opacity: 0,
                 rotate: swipeDirection > 0 ? 10 : -10,
+                transition: { 
+                  duration: 0.5, 
+                  ease: [0.32, 0.72, 0, 1] // Custom bezier curve for smoother easing
+                }
               }
             : {
                 x: 0,
                 opacity: 1,
                 rotate: 0,
+                transition: {
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
+                  mass: 0.8
+                }
               }
         }
         transition={{
@@ -159,7 +171,7 @@ export function Card({ card, reveal, setReveal, reverse, onSwipe }: CardProps) {
           damping: 40,
           stiffness: 400,
         }}
-        className="cursor-grab active:cursor-grabbing"
+        className="cursor-grab active:cursor-grabbing touch-none"
       >
         <FlipCard 
           front={front} 
@@ -168,8 +180,11 @@ export function Card({ card, reveal, setReveal, reverse, onSwipe }: CardProps) {
         />
       </motion.div>
       
-      <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center italic">
-        Swipe right if known, left if unknown
+      <div className="mt-4 text-sm text-gray-600 dark:text-gray-300 text-center">
+        <span className="flex items-center justify-center gap-2">
+          <span className="px-2 py-1 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-full text-xs">Swipe left 👈 if unknown</span>
+          <span className="px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full text-xs">Swipe right 👉 if known</span>
+        </span>
       </div>
       
       <motion.button

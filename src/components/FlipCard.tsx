@@ -25,7 +25,12 @@ export function FlipCard({ front, back, onFlip }: FlipCardProps) {
         className="relative w-full h-full"
         initial={false}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ duration: 0.6, type: "spring", stiffness: 300, damping: 30 }}
+        transition={{ 
+          duration: 0.5, 
+          type: "spring", 
+          stiffness: 350, 
+          damping: 25 
+        }}
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* Front of card */}

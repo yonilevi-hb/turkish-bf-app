@@ -1,14 +1,25 @@
 
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Star } from 'lucide-react';
 
 interface FlipCardProps {
   front: string;
   back: string;
   onFlip: (isRevealed: boolean) => void;
+  id?: string;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
-export function FlipCard({ front, back, onFlip }: FlipCardProps) {
+export function FlipCard({ 
+  front, 
+  back, 
+  onFlip, 
+  id, 
+  isFavorite = false,
+  onToggleFavorite 
+}: FlipCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const handleFlip = () => {
@@ -54,6 +65,26 @@ export function FlipCard({ front, back, onFlip }: FlipCardProps) {
           </div>
         </div>
       </motion.div>
+
+      {/* Favorites Star Button - added to show and toggle favorite status */}
+      {id && onToggleFavorite && (
+        <button 
+          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700 transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite();
+          }}
+          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+        >
+          <Star 
+            size={20} 
+            className={isFavorite 
+              ? "fill-yellow-400 text-yellow-400" 
+              : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            } 
+          />
+        </button>
+      )}
 
       <div className="absolute bottom-2 left-0 right-0 flex justify-center">
         <div className="w-12 h-1 bg-slate-300 dark:bg-slate-600 rounded-full" />

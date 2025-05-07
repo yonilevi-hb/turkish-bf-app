@@ -11,7 +11,7 @@ import { FileUpload } from '@/components/FileUpload';
 import { handleSwipe, getNextCard } from '@/utils/spacedRepetition';
 import { toast } from "sonner";
 import { useTheme } from 'next-themes';
-import { Sun, Moon, Shuffle, Settings, List, BookOpen, Play } from 'lucide-react';
+import { Sun, Moon, Shuffle, Settings, List, BookOpen, Play, Star } from 'lucide-react';
 import { OnboardingTutorial } from '@/components/OnboardingTutorial';
 import { ProgressStats } from '@/components/ProgressStats';
 import { DeckSelector, Deck } from '@/components/DeckSelector';
@@ -19,12 +19,13 @@ import { decks } from '@/data/decks';
 import { ReviewMode } from '@/components/ReviewMode';
 import { SettingsScreen } from '@/components/SettingsScreen';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useFavorites } from '@/hooks/useFavorites';
 
 export default function Index() {
   const [reveal, setReveal] = useState(false);
   const [mode, setMode] = useState('tr_en');
   const [reverse, setReverse] = useState(false);
-  const [view, setView] = useState<'cards' | 'list' | 'decks' | 'review' | 'settings'>('decks');
+  const [view, setView] = useState<'cards' | 'list' | 'decks' | 'review' | 'settings' | 'favorites'>('decks');
   const [swipeDirection, setSwipeDirection] = useState(0);
   const [showFeedback, setShowFeedback] = useState(true);
   const [knownCards, setKnownCards] = useState(0);
@@ -32,6 +33,7 @@ export default function Index() {
   const [selectedDeck, setSelectedDeck] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState(true);
   const { setTheme, theme } = useTheme();
+  const { favoritedCardIds, toggleFavorite, isFavorite } = useFavorites();
   
   const [settings, setSettings] = useState({
     swipeSensitivity: 50,
@@ -41,13 +43,25 @@ export default function Index() {
     theme: theme as 'light' | 'dark' | 'system'
   });
   
+  // Add favorites property to cards
   const [cards, setCards] = useState(() => 
     initialCards.map(card => ({
       ...card,
       level: 0,
-      nextReview: Date.now()
+      nextReview: Date.now(),
+      isFavorite: isFavorite(card.id)
     }))
   );
+  
+  // Update card favorites when favoritedCardIds changes
+  useEffect(() => {
+    setCards(prevCards => 
+      prevCards.map(card => ({
+        ...card,
+        isFavorite: isFavorite(card.id)
+      }))
+    );
+  }, [favoritedCardIds]);
   
   const [currentCard, setCurrentCard] = useState(() => getNextCard(cards));
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -70,7 +84,8 @@ export default function Index() {
     const cardsWithMetadata = newCards.map(card => ({
       ...card,
       level: 0,
-      nextReview: Date.now()
+      nextReview: Date.now(),
+      isFavorite: isFavorite(card.id)
     }));
     
     setCards(prevCards => [...prevCards, ...cardsWithMetadata]);
@@ -131,6 +146,11 @@ export default function Index() {
     setSwipeDirection(direction);
   };
 
+  const handleToggleFavorite = (cardId: string) => {
+    toggleFavorite(cardId);
+    toast(`Card ${isFavorite(cardId) ? 'removed from' : 'added to'} favorites!`);
+  };
+
   const shuffleCards = () => {
     setCards(prevCards => {
       const shuffled = [...prevCards].sort(() => Math.random() - 0.5);
@@ -146,7 +166,7 @@ export default function Index() {
     setView('cards');
   };
 
-  const handleViewChange = (newView: 'cards' | 'list' | 'decks' | 'review' | 'settings') => {
+  const handleViewChange = (newView: 'cards' | 'list' | 'decks' | 'review' | 'settings' | 'favorites') => {
     setView(newView);
   };
 
@@ -155,6 +175,8 @@ export default function Index() {
     center: { x: 0, opacity: 1 },
     exit: (direction: number) => ({ x: direction > 0 ? -300 : 300, opacity: 0 })
   };
+
+  const favoriteCards = cards.filter(card => card.isFavorite);
 
   return (
     <div className="min-h-[100dvh] flex flex-col items-center justify-start gap-6 bg-slate-50 dark:bg-gray-900 text-slate-900 dark:text-white p-4 font-['Inter']">
@@ -226,6 +248,10 @@ export default function Index() {
             <BookOpen className="h-4 w-4 mr-2" />
             Vocabulary
           </ToggleGroupItem>
+          <ToggleGroupItem value="favorites" aria-label="Toggle favorites">
+            <Star className="h-4 w-4 mr-2" />
+            Favorites
+          </ToggleGroupItem>
           <ToggleGroupItem value="settings" aria-label="Toggle settings">
             <Settings className="h-4 w-4 mr-2" />
             Settings
@@ -275,6 +301,7 @@ export default function Index() {
                       setReveal={setReveal}
                       reverse={reverse}
                       onSwipe={handleCardSwipe}
+                      onToggleFavorite={() => handleToggleFavorite(currentCard.id)}
                     />
                   )}
                 </motion.div>
@@ -315,7 +342,39 @@ export default function Index() {
             exit={{ opacity: 0, y: -20 }}
             className="w-full max-w-4xl"
           >
-            <VocabularyList cards={cards} />
+            <VocabularyList 
+              cards={cards}
+              onToggleFavorite={handleToggleFavorite}
+            />
+          </motion.div>
+        )}
+        
+        {view === 'favorites' && (
+          <motion.div 
+            key="favorites-view"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="w-full max-w-4xl"
+          >
+            <div className="w-full max-w-4xl mx-auto bg-eggwhite/5 rounded-xl backdrop-blur-sm border border-eggwhite/10 p-6">
+              <h2 className="text-2xl font-bold text-bordeaux mb-6">Favorite Cards</h2>
+              
+              {favoriteCards.length > 0 ? (
+                <VocabularyList 
+                  cards={favoriteCards}
+                  onToggleFavorite={handleToggleFavorite}
+                />
+              ) : (
+                <div className="text-center py-12">
+                  <Star className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+                  <p className="text-lg text-gray-600 dark:text-gray-400">No favorite cards yet.</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+                    Tap the star icon on any card to add it to your favorites.
+                  </p>
+                </div>
+              )}
+            </div>
           </motion.div>
         )}
         
@@ -331,6 +390,7 @@ export default function Index() {
               cards={cards} 
               onExit={() => setView('cards')}
               autoPlaySpeed={settings.cardFlipTime * 1000}
+              onToggleFavorite={handleToggleFavorite}
             />
           </motion.div>
         )}

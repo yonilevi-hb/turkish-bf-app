@@ -2,23 +2,27 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { FlipCard } from './FlipCard';
+import { Volume2 } from 'lucide-react';
 
 interface CardProps {
   card: {
     word: string;
     translation: string;
     level?: number;
+    id: string;
   };
   reveal: boolean;
   setReveal: (reveal: boolean) => void;
   reverse: boolean;
+  onSwipe: (direction: number) => void;
 }
 
-export function Card({ card, reveal, setReveal, reverse }: CardProps) {
+export function Card({ card, reveal, setReveal, reverse, onSwipe }: CardProps) {
   const front = reverse ? card.translation : card.word;
   const back = reverse ? card.word : card.translation;
   const dir = reverse ? '🇬🇧→🇹🇷' : '🇹🇷→🇬🇧';
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [swipeDirection, setSwipeDirection] = useState<number | null>(null);
 
   useEffect(() => {
     const loadVoices = () => {
@@ -82,7 +86,7 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
         }
       }
       
-      utterance.rate = 0.5;
+      utterance.rate = 0.8;
       
       console.log(`Speaking "${text}" with voice ${utterance.voice?.name || 'default'} (${utterance.lang})`);
       
@@ -90,14 +94,28 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
     }
   };
 
+  const handleDragEnd = (e: any, { offset, velocity }: any) => {
+    const swipe = Math.abs(offset.x) * velocity.x;
+    
+    if (Math.abs(offset.x) > 100) {
+      setSwipeDirection(offset.x > 0 ? 1 : -1);
+      
+      // Delay the onSwipe call to allow the animation to play
+      setTimeout(() => {
+        onSwipe(offset.x > 0 ? 1 : -1);
+        setSwipeDirection(null);
+      }, 300);
+    }
+  };
+
   return (
-    <div className="select-none cursor-grab active:cursor-grabbing">
+    <div className="select-none">
       <motion.div 
         className="flex justify-between items-center mb-4 md:mb-6"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <p className="text-xs md:text-sm text-slate-900 dark:text-white font-medium uppercase tracking-wide">
+        <p className="text-xs md:text-sm text-slate-700 dark:text-slate-300 font-medium uppercase tracking-wide">
           {dir}
         </p>
         {card.level !== undefined && (
@@ -118,11 +136,37 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
         )}
       </motion.div>
       
-      <FlipCard 
-        front={front} 
-        back={back} 
-        onFlip={setReveal}
-      />
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.7}
+        onDragEnd={handleDragEnd}
+        animate={
+          swipeDirection !== null
+            ? {
+                x: swipeDirection > 0 ? 1000 : -1000,
+                opacity: 0,
+                rotate: swipeDirection > 0 ? 10 : -10,
+              }
+            : {
+                x: 0,
+                opacity: 1,
+                rotate: 0,
+              }
+        }
+        transition={{
+          type: "spring",
+          damping: 40,
+          stiffness: 400,
+        }}
+        className="cursor-grab active:cursor-grabbing"
+      >
+        <FlipCard 
+          front={front} 
+          back={back} 
+          onFlip={setReveal}
+        />
+      </motion.div>
       
       <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center italic">
         Swipe right if known, left if unknown
@@ -130,11 +174,12 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
       
       <motion.button
         onClick={() => speakText(front)}
-        className="mt-4 md:mt-6 px-6 py-2 md:px-8 md:py-3 bg-blue-500 hover:bg-blue-600 rounded-full text-white transition-colors mx-auto block font-medium text-base md:text-lg hover:scale-105"
+        className="mt-4 md:mt-6 px-6 py-2 md:px-8 md:py-3 bg-indigo-500 hover:bg-indigo-600 rounded-full text-white shadow-lg shadow-indigo-500/30 transition-all mx-auto flex items-center justify-center gap-2 font-medium text-base md:text-lg"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        🔊 Listen
+        <Volume2 size={20} />
+        Listen
       </motion.button>
       
       {reveal && (
@@ -145,11 +190,12 @@ export function Card({ card, reveal, setReveal, reverse }: CardProps) {
         >
           <motion.button
             onClick={() => speakText(back)}
-            className="mt-2 md:mt-3 px-6 py-2 md:px-8 md:py-3 bg-blue-500 hover:bg-blue-600 rounded-full text-white transition-colors mx-auto block font-medium text-base md:text-lg hover:scale-105"
+            className="mt-2 md:mt-3 px-6 py-2 md:px-8 md:py-3 bg-indigo-500 hover:bg-indigo-600 rounded-full text-white shadow-lg shadow-indigo-500/30 transition-all mx-auto flex items-center justify-center gap-2 font-medium text-base md:text-lg"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            🔊 Listen to translation
+            <Volume2 size={20} />
+            Listen to Translation
           </motion.button>
         </motion.div>
       )}

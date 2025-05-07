@@ -1,6 +1,6 @@
 
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Star } from 'lucide-react';
 
 interface FlipCardProps {
@@ -66,10 +66,10 @@ export function FlipCard({
         </div>
       </motion.div>
 
-      {/* Favorites Star Button - added to show and toggle favorite status */}
+      {/* Favorites Star Button - enhanced visibility */}
       {id && onToggleFavorite && (
         <button 
-          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-700 transition-colors"
+          className="absolute top-3 right-3 z-20 p-2 rounded-full bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-700 transition-colors shadow-sm"
           onClick={(e) => {
             e.stopPropagation();
             onToggleFavorite();
@@ -77,7 +77,7 @@ export function FlipCard({
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
           <Star 
-            size={20} 
+            size={24} 
             className={isFavorite 
               ? "fill-yellow-400 text-yellow-400" 
               : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"

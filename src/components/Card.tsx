@@ -1,3 +1,4 @@
+
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { FlipCard } from './FlipCard';
@@ -10,14 +11,16 @@ interface CardProps {
     translation: string;
     level?: number;
     id: string;
+    isFavorite?: boolean;
   };
   reveal: boolean;
   setReveal: (reveal: boolean) => void;
   reverse: boolean;
   onSwipe: (direction: number) => void;
+  onToggleFavorite?: () => void;
 }
 
-export function Card({ card, reveal, setReveal, reverse, onSwipe }: CardProps) {
+export function Card({ card, reveal, setReveal, reverse, onSwipe, onToggleFavorite }: CardProps) {
   const front = reverse ? card.translation : card.word;
   const back = reverse ? card.word : card.translation;
   const dir = reverse ? '🇬🇧→🇹🇷' : '🇹🇷→🇬🇧';
@@ -183,6 +186,9 @@ export function Card({ card, reveal, setReveal, reverse, onSwipe }: CardProps) {
           front={front} 
           back={back} 
           onFlip={setReveal}
+          id={card.id}
+          isFavorite={card.isFavorite}
+          onToggleFavorite={onToggleFavorite}
         />
       </motion.div>
       

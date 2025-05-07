@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { VocabularyList } from '@/components/VocabularyList';
@@ -20,6 +19,17 @@ import { ReviewMode } from '@/components/ReviewMode';
 import { SettingsScreen } from '@/components/SettingsScreen';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useFavorites } from '@/hooks/useFavorites';
+
+// Define the card interface to fix TypeScript errors
+interface CardWithMetadata {
+  id: string;
+  word: string;
+  translation: string;
+  level: number;
+  nextReview: number;
+  isFavorite: boolean;
+  category?: string;
+}
 
 export default function Index() {
   const [reveal, setReveal] = useState(false);
@@ -44,7 +54,7 @@ export default function Index() {
   });
   
   // Add favorites property to cards
-  const [cards, setCards] = useState(() => 
+  const [cards, setCards] = useState<CardWithMetadata[]>(() => 
     initialCards.map(card => ({
       ...card,
       level: 0,
@@ -63,7 +73,11 @@ export default function Index() {
     );
   }, [favoritedCardIds]);
   
-  const [currentCard, setCurrentCard] = useState(() => getNextCard(cards));
+  const [currentCard, setCurrentCard] = useState<CardWithMetadata | null>(() => {
+    const next = getNextCard(cards);
+    return next ? { ...next, isFavorite: isFavorite(next.id) } : null;
+  });
+  
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
   useEffect(() => {
@@ -96,7 +110,7 @@ export default function Index() {
     if (!currentCard && selectedDeck) {
       const nextCard = getNextCard(cards);
       if (nextCard) {
-        setCurrentCard(nextCard);
+        setCurrentCard({...nextCard, isFavorite: isFavorite(nextCard.id)});
       } else {
         toast("Great job! Take a break - no cards to review right now.");
       }
@@ -126,7 +140,7 @@ export default function Index() {
     const updatedCard = handleSwipe(currentCard, isRight);
     setCards(prevCards => 
       prevCards.map(card => 
-        card.id === updatedCard.id ? updatedCard : card
+        card.id === updatedCard.id ? {...updatedCard, isFavorite: card.isFavorite} : card
       )
     );
     
@@ -390,7 +404,6 @@ export default function Index() {
               cards={cards} 
               onExit={() => setView('cards')}
               autoPlaySpeed={settings.cardFlipTime * 1000}
-              onToggleFavorite={handleToggleFavorite}
             />
           </motion.div>
         )}

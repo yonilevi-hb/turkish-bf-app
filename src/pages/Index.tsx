@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { VocabularyList } from '@/components/VocabularyList';
@@ -10,7 +11,7 @@ import { FileUpload } from '@/components/FileUpload';
 import { handleSwipe, getNextCard } from '@/utils/spacedRepetition';
 import { toast } from "sonner";
 import { useTheme } from 'next-themes';
-import { Sun, Moon, Shuffle, Settings, List, BookOpen, Play, Star } from 'lucide-react';
+import { Sun, Moon, Shuffle, Settings, List, BookOpen, Play, Star, Search, Plus } from 'lucide-react';
 import { OnboardingTutorial } from '@/components/OnboardingTutorial';
 import { ProgressStats } from '@/components/ProgressStats';
 import { DeckSelector, Deck } from '@/components/DeckSelector';
@@ -19,6 +20,15 @@ import { ReviewMode } from '@/components/ReviewMode';
 import { SettingsScreen } from '@/components/SettingsScreen';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useFavorites } from '@/hooks/useFavorites';
+import { Input } from "@/components/ui/input";
+import { 
+  getVocabularyCategories, 
+  getWordsByCategory, 
+  searchVocabulary, 
+  VocabularyWord 
+} from '@/services/vocabularyService';
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 // Define the card interface to fix TypeScript errors
 interface CardWithMetadata {
@@ -35,7 +45,7 @@ export default function Index() {
   const [reveal, setReveal] = useState(false);
   const [mode, setMode] = useState('tr_en');
   const [reverse, setReverse] = useState(false);
-  const [view, setView] = useState<'cards' | 'list' | 'decks' | 'review' | 'settings' | 'favorites'>('decks');
+  const [view, setView] = useState<'cards' | 'list' | 'decks' | 'review' | 'settings' | 'favorites' | 'online'>('decks');
   const [swipeDirection, setSwipeDirection] = useState(0);
   const [showFeedback, setShowFeedback] = useState(true);
   const [knownCards, setKnownCards] = useState(0);
@@ -44,6 +54,15 @@ export default function Index() {
   const [showTutorial, setShowTutorial] = useState(true);
   const { setTheme, theme } = useTheme();
   const { favoritedCardIds, toggleFavorite, isFavorite } = useFavorites();
+  
+  // Online vocabulary states
+  const [onlineCategories, setOnlineCategories] = useState<any[]>([]);
+  const [selectedOnlineCategory, setSelectedOnlineCategory] = useState<string | null>(null);
+  const [onlineWords, setOnlineWords] = useState<VocabularyWord[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+  const [isLoadingWords, setIsLoadingWords] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<VocabularyWord[]>([]);
   
   const [settings, setSettings] = useState({
     swipeSensitivity: 50,
@@ -80,6 +99,65 @@ export default function Index() {
   
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
+  // Fetch online vocabulary categories
+  useEffect(() => {
+    const fetchOnlineCategories = async () => {
+      try {
+        setIsLoadingCategories(true);
+        const categories = await getVocabularyCategories();
+        setOnlineCategories(categories);
+      } catch (error) {
+        console.error('Failed to fetch online vocabulary categories:', error);
+        toast.error('Failed to load online vocabulary');
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    fetchOnlineCategories();
+  }, []);
+
+  // Fetch words when an online category is selected
+  useEffect(() => {
+    const fetchCategoryWords = async () => {
+      if (selectedOnlineCategory) {
+        try {
+          setIsLoadingWords(true);
+          const words = await getWordsByCategory(selectedOnlineCategory);
+          setOnlineWords(words);
+        } catch (error) {
+          console.error('Failed to fetch words for category:', error);
+          toast.error('Failed to load vocabulary words');
+        } finally {
+          setIsLoadingWords(false);
+        }
+      }
+    };
+
+    if (selectedOnlineCategory) {
+      fetchCategoryWords();
+    }
+  }, [selectedOnlineCategory]);
+
+  // Handle search with debounce
+  useEffect(() => {
+    if (!searchQuery || searchQuery.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const results = await searchVocabulary(searchQuery);
+        setSearchResults(results);
+      } catch (error) {
+        console.error('Search error:', error);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   useEffect(() => {
     // Update theme when settings change
     if (settings.theme !== theme) {
@@ -104,6 +182,27 @@ export default function Index() {
     
     setCards(prevCards => [...prevCards, ...cardsWithMetadata]);
     toast(`Added ${newCards.length} new cards!`);
+  };
+
+  // Handle adding online vocabulary to deck
+  const handleImportOnlineWords = (words: VocabularyWord[]) => {
+    if (!words.length) {
+      toast.info('No words selected to import');
+      return;
+    }
+
+    const newCards = words.map(word => ({
+      id: `imported_${word.id}`,
+      word: word.translation, // Turkish word
+      translation: word.word, // English word
+      level: 0,
+      nextReview: Date.now(),
+      isFavorite: false,
+      category: word.category
+    }));
+
+    setCards(prevCards => [...prevCards, ...newCards]);
+    toast.success(`Added ${words.length} words to your collection!`);
   };
 
   useEffect(() => {
@@ -180,7 +279,7 @@ export default function Index() {
     setView('cards');
   };
 
-  const handleViewChange = (newView: 'cards' | 'list' | 'decks' | 'review' | 'settings' | 'favorites') => {
+  const handleViewChange = (newView: 'cards' | 'list' | 'decks' | 'review' | 'settings' | 'favorites' | 'online') => {
     setView(newView);
   };
 
@@ -286,6 +385,10 @@ export default function Index() {
             <BookOpen className="h-4 w-4 mr-2" />
             Decks
           </ToggleGroupItem>
+          <ToggleGroupItem value="online" aria-label="Toggle online vocabulary">
+            <Plus className="h-4 w-4 mr-2" />
+            Online Words
+          </ToggleGroupItem>
           <ToggleGroupItem value="cards" aria-label="Toggle cards view" disabled={!selectedDeck}>
             <Play className="h-4 w-4 mr-2" />
             Learn
@@ -319,14 +422,20 @@ export default function Index() {
               Shuffle Cards
             </Button>
             <FileUpload onCardsAdd={handleAddCards} />
-            <Button
-              variant="outline"
-              className="flex items-center gap-2 bg-white dark:bg-gray-800"
-              onClick={() => window.location.href = '/library'}
-            >
-              <BookOpen className="h-4 w-4" />
-              Online Library
-            </Button>
+          </div>
+        )}
+        
+        {view === 'online' && (
+          <div className="flex items-center gap-3 w-full max-w-md">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search vocabulary..."
+                className="pl-9 w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
           </div>
         )}
       </header>
@@ -389,6 +498,165 @@ export default function Index() {
               onDeckSelect={handleDeckSelect}
               selectedDeck={selectedDeck}
             />
+          </motion.div>
+        )}
+        
+        {view === 'online' && (
+          <motion.div
+            key="online-view"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="w-full max-w-4xl"
+          >
+            <div className="w-full max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold mb-4">Online Vocabulary</h2>
+                <p className="text-slate-600 dark:text-slate-300">
+                  Explore words from our online library and add them to your collection.
+                </p>
+              </div>
+
+              {searchQuery.length >= 2 && (
+                <div className="mb-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium">Search Results</h3>
+                    {searchResults.length > 0 && (
+                      <Button 
+                        size="sm"
+                        onClick={() => handleImportOnlineWords(searchResults)}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Import All
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {searchResults.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {searchResults.map(word => (
+                        <div 
+                          key={word.id}
+                          className="p-4 border border-slate-200 dark:border-gray-700 rounded-lg flex flex-col gap-2"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="text-lg font-medium">{word.translation}</p>
+                              <p className="text-slate-600 dark:text-slate-400">{word.word}</p>
+                            </div>
+                            <Button 
+                              size="sm" 
+                              variant="ghost"
+                              onClick={() => handleImportOnlineWords([word])}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {word.category && (
+                            <Badge variant="outline" className="self-start">
+                              {word.category}
+                            </Badge>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center py-10 text-slate-500 dark:text-slate-400">
+                      No matching words found
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="mb-8">
+                <h3 className="text-lg font-medium mb-4">Categories</h3>
+                
+                {isLoadingCategories ? (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                      <div key={i} className="h-24 rounded-lg border border-slate-200 dark:border-gray-700 p-4">
+                        <Skeleton className="h-6 w-3/4 mb-2" />
+                        <Skeleton className="h-4 w-full" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {onlineCategories.map(category => (
+                      <motion.div
+                        key={category.id}
+                        whileHover={{ y: -5, scale: 1.02 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        className={`cursor-pointer h-24 rounded-lg border p-4 ${
+                          selectedOnlineCategory === category.id
+                            ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30"
+                            : "border-slate-200 dark:border-gray-700"
+                        }`}
+                        onClick={() => setSelectedOnlineCategory(category.id)}
+                      >
+                        <h4 className="font-medium">{category.name}</h4>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                          {category.wordCount} words
+                        </p>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {selectedOnlineCategory && (
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium">
+                      {onlineCategories.find(c => c.id === selectedOnlineCategory)?.name || "Category Words"}
+                    </h3>
+                    {onlineWords.length > 0 && (
+                      <Button 
+                        onClick={() => handleImportOnlineWords(onlineWords)}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Import All
+                      </Button>
+                    )}
+                  </div>
+
+                  {isLoadingWords ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {[1, 2, 3, 4].map(i => (
+                        <div 
+                          key={i}
+                          className="p-4 border border-slate-200 dark:border-gray-700 rounded-lg"
+                        >
+                          <Skeleton className="h-6 w-1/2 mb-2" />
+                          <Skeleton className="h-4 w-full" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {onlineWords.map(word => (
+                        <div 
+                          key={word.id}
+                          className="p-4 border border-slate-200 dark:border-gray-700 rounded-lg flex justify-between items-start"
+                        >
+                          <div>
+                            <p className="text-lg font-medium">{word.translation}</p>
+                            <p className="text-slate-600 dark:text-slate-400">{word.word}</p>
+                          </div>
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={() => handleImportOnlineWords([word])}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </motion.div>
         )}
         

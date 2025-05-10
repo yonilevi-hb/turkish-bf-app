@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { VocabularyList } from '@/components/VocabularyList';
@@ -14,14 +13,14 @@ import { useTheme } from 'next-themes';
 import { Sun, Moon, Shuffle, Settings, List, BookOpen, Play, Star, Search, Plus } from 'lucide-react';
 import { OnboardingTutorial } from '@/components/OnboardingTutorial';
 import { ProgressStats } from '@/components/ProgressStats';
-import { DeckSelector, Deck } from '@/components/DeckSelector';
-import { decks } from '@/data/decks'; // Import the decks variable
+import { DeckSelector } from '@/components/DeckSelector';
+import { decks, deckCards } from '@/data/decks'; // Import decks and the deck cards mapping
 import { ReviewMode } from '@/components/ReviewMode';
 import { SettingsScreen } from '@/components/SettingsScreen';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useFavorites } from '@/hooks/useFavorites';
 import { Input } from "@/components/ui/input";
-import { translateWord, VocabularyWord } from '@/services/vocabularyService';
+import { translateWord } from '@/services/vocabularyService';
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";

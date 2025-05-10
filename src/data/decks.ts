@@ -81,3 +81,14 @@ export const decks: Deck[] = [
     level: 'mixed',
   }
 ];
+
+// Export the filtered card arrays so they can be used when a deck is selected
+export const deckCards = {
+  basics: basicCards,
+  verbs: verbCards,
+  phrases: phrasesCards,
+  intermediate: intermediateCards,
+  advanced: advancedCards,
+  mixed: initialCards
+};
+

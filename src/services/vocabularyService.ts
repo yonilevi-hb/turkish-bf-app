@@ -79,6 +79,31 @@ const categoryWordMap: Record<string, string[]> = {
 // Translate text from English to Turkish
 const translateToTurkish = async (text: string): Promise<string> => {
   try {
+    // For demo purposes, we'll use a simple translation object for common words
+    // This helps avoid rate limits with the translation API
+    const quickTranslations: Record<string, string> = {
+      'hello': 'Merhaba',
+      'goodbye': 'Hoşça kal',
+      'thank you': 'Teşekkür ederim',
+      'please': 'Lütfen',
+      'sorry': 'Üzgünüm',
+      'airport': 'Havalimanı',
+      'hotel': 'Otel',
+      'ticket': 'Bilet',
+      'meeting': 'Toplantı',
+      'office': 'Ofis',
+      'tree': 'Ağaç',
+      'restaurant': 'Restoran',
+      'coffee': 'Kahve',
+      'water': 'Su'
+    };
+    
+    // Check if we have a quick translation available
+    if (quickTranslations[text.toLowerCase()]) {
+      return quickTranslations[text.toLowerCase()];
+    }
+    
+    // Only call the API for words not in our quick translation map
     const response = await fetch(TRANSLATE_API, {
       method: 'POST',
       headers: {
@@ -92,7 +117,8 @@ const translateToTurkish = async (text: string): Promise<string> => {
     });
 
     if (!response.ok) {
-      throw new Error(`Translation API error: ${response.status}`);
+      console.warn(`Translation API error: ${response.status}. Using original text.`);
+      return text;
     }
 
     const data = await response.json();
@@ -110,7 +136,8 @@ const getWordDefinition = async (word: string): Promise<any> => {
     const response = await fetch(`${API_URL}/${encodeURIComponent(word)}`);
     
     if (!response.ok) {
-      throw new Error(`Dictionary API error: ${response.status}`);
+      console.warn(`Dictionary API error for word ${word}: ${response.status}`);
+      return null;
     }
     
     return await response.json();
@@ -129,27 +156,41 @@ export const getWordsByCategory = async (categoryId: string): Promise<Vocabulary
     // Process only the first 10 words to avoid rate limiting
     for (let i = 0; i < Math.min(words.length, 10); i++) {
       const word = words[i];
-      const definition = await getWordDefinition(word);
       
-      if (definition && definition.length > 0) {
-        // Get the Turkish translation
-        const translation = await translateToTurkish(word);
+      // Create a basic word object even before API calls
+      let vocabWord: VocabularyWord = {
+        id: `${categoryId}_${i}`,
+        word: word,
+        translation: '',
+        category: categoryId
+      };
+      
+      try {
+        // Get the English definition
+        const definition = await getWordDefinition(word);
         
-        // Create a vocabulary word object
-        const vocabWord: VocabularyWord = {
-          id: `${categoryId}_${i}`,
-          word: definition[0].word,
-          translation: translation,
-          category: categoryId,
-          examples: definition[0].meanings?.[0]?.definitions?.[0]?.example ? 
-            [definition[0].meanings[0].definitions[0].example] : undefined
-        };
-        
-        result.push(vocabWord);
-        
-        // Add a small delay to avoid overwhelming the APIs
-        await new Promise(resolve => setTimeout(resolve, 300));
+        if (definition && definition.length > 0) {
+          // Get the Turkish translation
+          const translation = await translateToTurkish(word);
+          
+          // Update the vocabulary word object
+          vocabWord = {
+            id: `${categoryId}_${i}`,
+            word: definition[0].word,
+            translation: translation,
+            category: categoryId,
+            examples: definition[0].meanings?.[0]?.definitions?.[0]?.example ? 
+              [definition[0].meanings[0].definitions[0].example] : undefined
+          };
+        }
+      } catch (innerError) {
+        console.error(`Error processing word ${word}:`, innerError);
       }
+      
+      result.push(vocabWord);
+      
+      // Add a small delay to avoid overwhelming the APIs
+      await new Promise(resolve => setTimeout(resolve, 300));
     }
     
     return result;
@@ -194,21 +235,25 @@ export const searchVocabulary = async (query: string): Promise<VocabularyWord[]>
       
       if (matchingWords.length > 0) {
         for (const word of matchingWords) {
-          const definition = await getWordDefinition(word);
-          if (definition && definition.length > 0) {
-            const translation = await translateToTurkish(word);
-            
-            allWords.push({
-              id: `search_${Date.now()}_${word}`,
-              word: definition[0].word,
-              translation: translation,
-              category: category.name,
-              examples: definition[0].meanings?.[0]?.definitions?.[0]?.example ? 
-                [definition[0].meanings[0].definitions[0].example] : undefined
-            });
-            
-            // Add a small delay between requests
-            await new Promise(resolve => setTimeout(resolve, 300));
+          try {
+            const definition = await getWordDefinition(word);
+            if (definition && definition.length > 0) {
+              const translation = await translateToTurkish(word);
+              
+              allWords.push({
+                id: `search_${Date.now()}_${word}`,
+                word: definition[0].word,
+                translation: translation,
+                category: category.name,
+                examples: definition[0].meanings?.[0]?.definitions?.[0]?.example ? 
+                  [definition[0].meanings[0].definitions[0].example] : undefined
+              });
+              
+              // Add a small delay between requests
+              await new Promise(resolve => setTimeout(resolve, 300));
+            }
+          } catch (innerError) {
+            console.error(`Error processing search word ${word}:`, innerError);
           }
         }
       }

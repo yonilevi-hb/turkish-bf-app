@@ -15,7 +15,7 @@ export interface VocabularyWord {
 const API_URL = "https://api.dictionaryapi.dev/api/v2/entries/en";
 const TRANSLATE_API = "https://libretranslate.de/translate";
 
-// Translate text from English to Turkish
+// Translate text from English to Turkish with timeout
 export const translateWord = async (text: string): Promise<VocabularyWord | null> => {
   try {
     if (!text.trim()) {
@@ -23,18 +23,29 @@ export const translateWord = async (text: string): Promise<VocabularyWord | null
       return null;
     }
 
+    // Create a timeout promise
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Translation request timed out")), 10000);
+    });
+
     // Get the English definition first
-    const definitionResponse = await fetch(`${API_URL}/${encodeURIComponent(text)}`);
+    const definitionPromise = fetch(`${API_URL}/${encodeURIComponent(text)}`);
+    const definitionResponse = await Promise.race([definitionPromise, timeoutPromise]) as Response;
     
     if (!definitionResponse.ok) {
       toast.error(`Couldn't find definition for "${text}"`);
-      return null;
+      return {
+        id: `manual_${Date.now()}`,
+        word: text,
+        translation: "Translation failed",
+        examples: []
+      };
     }
     
     const definitionData = await definitionResponse.json();
     
-    // Now translate to Turkish
-    const translationResponse = await fetch(TRANSLATE_API, {
+    // Now translate to Turkish with timeout
+    const translationPromise = fetch(TRANSLATE_API, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -46,23 +57,38 @@ export const translateWord = async (text: string): Promise<VocabularyWord | null
       })
     });
 
+    const translationResponse = await Promise.race([translationPromise, timeoutPromise]) as Response;
+
     if (!translationResponse.ok) {
       toast.error("Translation service unavailable");
-      return null;
+      return {
+        id: `manual_${Date.now()}`,
+        word: text,
+        translation: "Translation unavailable",
+        examples: definitionData[0]?.meanings?.[0]?.definitions?.[0]?.example ? 
+          [definitionData[0].meanings[0].definitions[0].example] : []
+      };
     }
 
     const translationData = await translationResponse.json();
     
     return {
       id: `translated_${Date.now()}`,
-      word: translationData.translatedText || text,
-      translation: text,
+      word: text, // English word
+      translation: translationData.translatedText || text, // Turkish translation
       examples: definitionData[0]?.meanings?.[0]?.definitions?.[0]?.example ? 
-        [definitionData[0].meanings[0].definitions[0].example] : undefined
+        [definitionData[0].meanings[0].definitions[0].example] : []
     };
   } catch (error) {
     console.error('Error translating word:', error);
-    toast.error("Failed to translate word");
-    return null;
+    toast.error("Failed to translate word. Please try again.");
+    
+    // Return a basic word object even on failure
+    return {
+      id: `error_${Date.now()}`,
+      word: text,
+      translation: "Translation failed",
+      examples: []
+    };
   }
 };

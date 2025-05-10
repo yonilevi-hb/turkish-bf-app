@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { VocabularyList } from '@/components/VocabularyList';
@@ -15,7 +14,6 @@ import { Sun, Moon, Shuffle, Settings, List, BookOpen, Play, Star, Search, Plus 
 import { OnboardingTutorial } from '@/components/OnboardingTutorial';
 import { ProgressStats } from '@/components/ProgressStats';
 import { DeckSelector, Deck } from '@/components/DeckSelector';
-import { decks } from '@/data/decks';
 import { ReviewMode } from '@/components/ReviewMode';
 import { SettingsScreen } from '@/components/SettingsScreen';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -24,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { translateWord, VocabularyWord } from '@/services/vocabularyService';
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
@@ -140,8 +138,8 @@ export default function Index() {
       if (translatedWord) {
         const newCard = {
           id: translatedWord.id,
-          word: translatedWord.translation, // English word
-          translation: translatedWord.word, // Turkish translation
+          word: translatedWord.word, // English word
+          translation: translatedWord.translation, // Turkish translation
           level: 0,
           nextReview: Date.now(),
           isFavorite: false,
@@ -155,7 +153,7 @@ export default function Index() {
       }
     } catch (error) {
       console.error('Translation error:', error);
-      toast.error("Failed to translate word");
+      toast.error("Failed to translate word. Please try again.");
     } finally {
       setIsTranslating(false);
     }
@@ -392,6 +390,9 @@ export default function Index() {
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle>Add New Vocabulary</DialogTitle>
+                  <DialogDescription>
+                    Enter an English word to translate to Turkish
+                  </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

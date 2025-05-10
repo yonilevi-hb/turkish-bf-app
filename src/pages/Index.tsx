@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { VocabularyList } from '@/components/VocabularyList';
@@ -14,6 +15,7 @@ import { Sun, Moon, Shuffle, Settings, List, BookOpen, Play, Star, Search, Plus 
 import { OnboardingTutorial } from '@/components/OnboardingTutorial';
 import { ProgressStats } from '@/components/ProgressStats';
 import { DeckSelector, Deck } from '@/components/DeckSelector';
+import { decks } from '@/data/decks'; // Import the decks variable
 import { ReviewMode } from '@/components/ReviewMode';
 import { SettingsScreen } from '@/components/SettingsScreen';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';

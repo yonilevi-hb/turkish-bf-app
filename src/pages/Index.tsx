@@ -192,6 +192,42 @@ export default function Index() {
 
   const favoriteCards = cards.filter(card => card.isFavorite);
 
+  // Load imported vocabulary if available
+  useEffect(() => {
+    const importedVocabJson = localStorage.getItem('importedVocabulary');
+    if (importedVocabJson) {
+      try {
+        const importedVocab = JSON.parse(importedVocabJson);
+        if (Array.isArray(importedVocab) && importedVocab.length > 0) {
+          // Convert imported vocab to card format
+          const newCards = importedVocab.map(word => ({
+            id: word.id || `imp_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+            word: word.translation, // Turkish word
+            translation: word.word, // English word
+            level: 0,
+            nextReview: Date.now(),
+            isFavorite: false,
+            category: word.category || 'Imported'
+          }));
+          
+          // Check for duplicates before adding
+          const existingIds = new Set(cards.map(card => card.id));
+          const uniqueNewCards = newCards.filter(card => !existingIds.has(card.id));
+          
+          if (uniqueNewCards.length > 0) {
+            setCards(prev => [...prev, ...uniqueNewCards]);
+            toast.success(`Added ${uniqueNewCards.length} imported words to your collection!`);
+            
+            // Clear the imported vocabulary from localStorage
+            localStorage.removeItem('importedVocabulary');
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing imported vocabulary:', error);
+      }
+    }
+  }, []);
+
   return (
     <div className="min-h-[100dvh] flex flex-col items-center justify-start gap-6 bg-slate-50 dark:bg-gray-900 text-slate-900 dark:text-white p-4 font-['Inter']">
       <AnimatePresence>
@@ -283,6 +319,14 @@ export default function Index() {
               Shuffle Cards
             </Button>
             <FileUpload onCardsAdd={handleAddCards} />
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 bg-white dark:bg-gray-800"
+              onClick={() => window.location.href = '/library'}
+            >
+              <BookOpen className="h-4 w-4" />
+              Online Library
+            </Button>
           </div>
         )}
       </header>

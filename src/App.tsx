@@ -7,8 +7,17 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from 'next-themes';
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import OnlineLibrary from "./pages/OnlineLibrary";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false
+    }
+  }
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -19,6 +28,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/library" element={<OnlineLibrary />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
